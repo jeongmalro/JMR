@@ -15,13 +15,12 @@
     --text: #e8e8f0;
     --muted: #6b6b8a;
     --accent: #f0c040;
-
-    --kim: #4a9eff;
-    --roh: #7bed9f;
-    --lee: #ff6b6b;
-    --park: #ffa94d;
+    --kim:  #4a9eff;
+    --roh:  #7bed9f;
+    --lee:  #f8a04a;
+    --park: #a78bfa;
     --moon: #da77f2;
-    --yoon: #ff8787;
+    --yoon: #ff6b6b;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -31,12 +30,11 @@
     color: var(--text);
     font-family: 'Noto Serif KR', serif;
     min-height: 100vh;
-    overflow-x: hidden;
   }
 
-  /* HEADER */
+  /* ── HEADER ── */
   header {
-    padding: 56px 48px 40px;
+    padding: 52px 48px 36px;
     border-bottom: 1px solid var(--border);
     position: relative;
     overflow: hidden;
@@ -44,9 +42,9 @@
   header::before {
     content: '';
     position: absolute;
-    top: -60px; left: -60px;
-    width: 320px; height: 320px;
-    background: radial-gradient(circle, rgba(240,192,64,0.07) 0%, transparent 70%);
+    top: -80px; left: -80px;
+    width: 360px; height: 360px;
+    background: radial-gradient(circle, rgba(240,192,64,0.06) 0%, transparent 70%);
     pointer-events: none;
   }
   .eyebrow {
@@ -55,47 +53,45 @@
     letter-spacing: 0.2em;
     color: var(--accent);
     text-transform: uppercase;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
   }
   h1 {
-    font-size: clamp(28px, 4vw, 52px);
+    font-size: clamp(26px, 4vw, 50px);
     font-weight: 900;
     line-height: 1.1;
     letter-spacing: -0.02em;
   }
   h1 span { color: var(--accent); }
   .subtitle {
-    margin-top: 14px;
-    font-size: 14px;
+    margin-top: 12px;
+    font-size: 13px;
     color: var(--muted);
     font-family: 'IBM Plex Mono', monospace;
     letter-spacing: 0.05em;
   }
 
-  /* MAIN GRID */
-  main {
-    padding: 48px;
-    display: grid;
-    gap: 32px;
-  }
+  /* ── MAIN ── */
+  main { padding: 44px 48px; display: grid; gap: 28px; }
 
-  /* PRESIDENT CARDS */
-  .cards-section-label {
+  /* ── SECTION LABEL ── */
+  .section-label {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 10px;
     letter-spacing: 0.18em;
     color: var(--muted);
     text-transform: uppercase;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
   }
+
+  /* ── CARDS ── */
   .cards {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 12px;
   }
-  @media (max-width: 900px) {
-    .cards { grid-template-columns: repeat(3, 1fr); }
-  }
+  @media (max-width: 960px) { .cards { grid-template-columns: repeat(3,1fr); } }
+  @media (max-width: 560px) { .cards { grid-template-columns: repeat(2,1fr); } }
+
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -103,7 +99,6 @@
     padding: 20px 16px;
     position: relative;
     overflow: hidden;
-    cursor: pointer;
     transition: border-color 0.2s, transform 0.15s;
   }
   .card::before {
@@ -111,154 +106,101 @@
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 3px;
-    background: var(--color);
+    background: var(--c);
   }
-  .card:hover { transform: translateY(-2px); border-color: var(--color); }
-  .card.active { border-color: var(--color); background: color-mix(in srgb, var(--color) 8%, var(--surface)); }
+  .card:hover { transform: translateY(-2px); border-color: var(--c); }
 
-  .card-name {
-    font-size: 15px;
-    font-weight: 700;
-    margin-bottom: 4px;
-  }
-  .card-term {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    margin-bottom: 12px;
-    letter-spacing: 0.05em;
-  }
-  .card-pct {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--color);
-  }
-  .card-pct-label {
-    font-size: 10px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-  .card-bar-bg {
-    margin-top: 12px;
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .card-bar {
-    height: 100%;
-    background: var(--color);
-    border-radius: 2px;
-    transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-    width: 0%;
-  }
+  .card-name  { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .card-term  { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 12px; }
+  .card-pct   { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; color: var(--c); }
+  .card-label { font-size: 10px; color: var(--muted); margin-top: 2px; }
 
-  /* CHART */
+  .card-bar-bg { margin-top: 12px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .card-bar    { height: 100%; background: var(--c); border-radius: 2px;
+                 transition: width 1.2s cubic-bezier(0.16,1,0.3,1); width: 0; }
+
+  /* ── CHART BOX ── */
   .chart-box {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 4px;
-    padding: 32px;
+    padding: 30px;
   }
   .chart-box-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
   }
-  .chart-title {
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-  }
-  .chart-note {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    text-align: right;
-    line-height: 1.6;
-  }
-  .chart-wrap { position: relative; height: 320px; }
+  .chart-title { font-size: 15px; font-weight: 700; }
+  .chart-note  { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); text-align: right; line-height: 1.7; }
+  .chart-wrap  { position: relative; height: 300px; }
 
-  /* BAR CHART */
-  .bar-chart-box {
+  /* ── RAW DATA TABLE ── */
+  .table-box {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 4px;
-    padding: 32px;
+    overflow: hidden;
   }
+  .table-box .section-label { padding: 20px 20px 0; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  thead th {
+    background: #1a1a2e;
+    padding: 12px 20px;
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+  thead th:nth-child(3), thead th:nth-child(4) { text-align: right; }
+  tbody tr { border-top: 1px solid var(--border); }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+  tbody td { padding: 11px 20px; font-size: 13px; }
+  tbody td:nth-child(1) { font-weight: 700; }
+  tbody td:nth-child(2) { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); }
+  tbody td:nth-child(3) { font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-align: right; }
+  tbody td:nth-child(4) { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; }
 
-  /* INSIGHT */
+  /* ── INSIGHT ── */
   .insight-box {
-    background: color-mix(in srgb, var(--accent) 6%, var(--surface));
-    border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+    background: color-mix(in srgb, var(--accent) 5%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
     border-radius: 4px;
-    padding: 28px 32px;
+    padding: 26px 30px;
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: 20px;
+    gap: 18px;
     align-items: start;
   }
-  .insight-icon {
-    font-size: 28px;
-    line-height: 1;
-    margin-top: 2px;
-  }
-  .insight-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    color: var(--accent);
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-  .insight-text {
-    font-size: 14px;
-    line-height: 1.8;
-    color: var(--text);
-  }
+  .insight-icon  { font-size: 26px; margin-top: 2px; }
+  .insight-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.18em;
+                   color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+  .insight-text  { font-size: 14px; line-height: 1.85; color: var(--text); }
   .insight-text strong { color: var(--accent); }
 
-  /* FOOTER */
+  /* ── FOOTER ── */
   footer {
-    padding: 32px 48px;
+    padding: 28px 48px;
     border-top: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
   }
-  .footer-source {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.05em;
-  }
-  .footer-brand {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--accent);
-    letter-spacing: 0.1em;
-  }
+  .footer-source { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); line-height: 1.7; }
+  .footer-brand  { font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: 0.1em; }
 
-  /* ANIMATE IN */
-  .fade-up {
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeUp 0.6s ease forwards;
-  }
-  @keyframes fadeUp {
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .delay-1 { animation-delay: 0.1s; }
-  .delay-2 { animation-delay: 0.2s; }
-  .delay-3 { animation-delay: 0.3s; }
-  .delay-4 { animation-delay: 0.4s; }
+  /* ── ANIMATIONS ── */
+  .fade-up { opacity: 0; transform: translateY(18px); animation: fadeUp 0.55s ease forwards; }
+  @keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+  .d1{animation-delay:.08s} .d2{animation-delay:.18s} .d3{animation-delay:.28s} .d4{animation-delay:.38s} .d5{animation-delay:.48s}
 </style>
 </head>
 <body>
@@ -266,52 +208,62 @@
 <header class="fade-up">
   <div class="eyebrow">팀 정말로 · 데이터 저널리즘</div>
   <h1>대통령마다<br><span>집값</span>은 얼마나 올랐나?</h1>
-  <div class="subtitle">전국 아파트 매매가격 변동률 · 1998 – 2025 · 출처: 한국부동산원 / 국민은행</div>
+  <div class="subtitle">전국 주택가격지수 기반 · 기준: 2011.06 = 100 · 출처: 한국부동산원</div>
 </header>
 
 <main>
 
   <!-- CARDS -->
-  <div class="fade-up delay-1">
-    <div class="cards-section-label">대통령별 임기 중 전국 아파트 가격 변동률</div>
-    <div class="cards" id="presidentCards"></div>
-  </div>
-
-  <!-- LINE CHART -->
-  <div class="chart-box fade-up delay-2">
-    <div class="chart-box-header">
-      <div class="chart-title">연도별 아파트 매매가격 변동률 추이</div>
-      <div class="chart-note">
-        * 2012년 이전: 국민은행 기준<br>
-        * 2013년 이후: 한국부동산원 기준
-      </div>
-    </div>
-    <div class="chart-wrap">
-      <canvas id="lineChart"></canvas>
-    </div>
+  <div class="fade-up d1">
+    <div class="section-label">대통령별 임기 중 주택가격 상승률</div>
+    <div class="cards" id="cards"></div>
   </div>
 
   <!-- BAR CHART -->
-  <div class="bar-chart-box fade-up delay-3">
+  <div class="chart-box fade-up d2">
     <div class="chart-box-header">
-      <div class="chart-title">대통령별 임기 누적 상승률 비교</div>
-      <div class="chart-note">임기 시작 → 종료 시점 기준</div>
+      <div class="chart-title">임기 누적 상승률 비교</div>
+      <div class="chart-note">임기 시작월 → 종료월 지수 기준<br>기준시점 2011.06 = 100</div>
     </div>
-    <div class="chart-wrap" style="height:260px;">
-      <canvas id="barChart"></canvas>
+    <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+  </div>
+
+  <!-- INDEX LINE CHART -->
+  <div class="chart-box fade-up d3">
+    <div class="chart-box-header">
+      <div class="chart-title">주택가격지수 추이 (2011.06 = 100)</div>
+      <div class="chart-note">임기 시작·종료 기준점 표시</div>
     </div>
+    <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+  </div>
+
+  <!-- RAW DATA TABLE -->
+  <div class="table-box fade-up d4">
+    <div class="section-label">원본 데이터</div>
+    <table>
+      <thead>
+        <tr>
+          <th>정부</th>
+          <th>구간</th>
+          <th>지수 (시작 → 종료)</th>
+          <th>상승률</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
   </div>
 
   <!-- INSIGHT -->
-  <div class="insight-box fade-up delay-4">
+  <div class="insight-box fade-up d5">
     <div class="insight-icon">🔍</div>
     <div>
       <div class="insight-label">팩트 체크 포인트</div>
       <div class="insight-text">
-        노무현 정부 임기 중 전국 아파트값 누적 상승률은 <strong>약 +56%</strong>로 역대 최고 수준이었습니다.
-        반면 이명박 정부는 <strong>글로벌 금융위기</strong>의 영향으로 오히려 하락세를 경험했습니다.
-        문재인 정부 역시 <strong>약 +50%</strong>로 높은 상승률을 기록했으며, 특히 2020–2021년 급등이 두드러집니다.
-        단, 상승률은 <strong>국내외 경제상황·금리·공급량</strong> 등 복합 요인의 결과임을 고려해야 합니다.
+        한국부동산원 주택가격지수 기준, 임기 중 상승률이 가장 높은 정부는 <strong>김대중 (+40.79%)</strong>,
+        다음은 <strong>노무현 (+32.22%)</strong>, <strong>문재인 (+29.56%)</strong> 순입니다.
+        윤석열 정부는 <strong>-11.78%</strong>로 역대 유일한 마이너스를 기록 중입니다 (2025.03 기준).
+        단, 집값은 대통령 정책 외에도 <strong>금리·글로벌 경기·공급량</strong> 등 복합 요인이 작용하며,
+        김대중 정부는 외환위기 직후 저점 출발이었다는 맥락도 중요합니다.
       </div>
     </div>
   </div>
@@ -320,194 +272,96 @@
 
 <footer>
   <div class="footer-source">
-    출처: 한국부동산원 「전국주택가격동향조사」 / 국민은행 주택가격동향 (2012년 이전)<br>
-    공공데이터포털 data.go.kr · e-나라지표 index.go.kr
+    출처: 한국부동산원 「전국주택가격동향조사」 · 기준시점 2011.06 = 100<br>
+    공공데이터포털 data.go.kr · 팀 정말로 자체 분석
   </div>
   <div class="footer-brand">팀 정말로</div>
 </footer>
 
 <script>
-// ─── DATA ─────────────────────────────────────────────────────────────────
-// 연도별 전국 아파트 매매가격 변동률 (%)
-// 출처: e-나라지표, 한국부동산원 전국주택가격동향조사
-// *2012년 이전 국민은행 기준, 2013년~ 한국부동산원 기준
-const yearlyData = [
-  { year: 1998, rate: -12.4 },
-  { year: 1999, rate:  2.8 },
-  { year: 2000, rate:  7.0 },
-  { year: 2001, rate: 14.2 },
-  { year: 2002, rate: 22.8 },
-  { year: 2003, rate:  5.7 },
-  { year: 2004, rate: -2.1 },
-  { year: 2005, rate:  4.0 },
-  { year: 2006, rate: 11.6 },
-  { year: 2007, rate:  3.1 },
-  { year: 2008, rate:  3.1 },
-  { year: 2009, rate:  1.5 },
-  { year: 2010, rate:  1.9 },
-  { year: 2011, rate:  6.9 },
-  { year: 2012, rate:  0.0 },
-  { year: 2013, rate:  0.3 },
-  { year: 2014, rate:  1.7 },
-  { year: 2015, rate:  3.5 },
-  { year: 2016, rate:  0.7 },
-  { year: 2017, rate:  1.5 },
-  { year: 2018, rate:  1.1 },
-  { year: 2019, rate: -0.4 },
-  { year: 2020, rate:  7.5 },
-  { year: 2021, rate: 18.0 },
-  { year: 2022, rate: -4.7 },
-  { year: 2023, rate: -5.0 },
-  { year: 2024, rate:  1.9 },
-];
-
+// ── 실제 데이터 (이미지 기준) ────────────────────────────────
 const presidents = [
-  { name: '김대중', term: '1998–2003', years: [1998,1999,2000,2001,2002], color: '#4a9eff', varName: '--kim' },
-  { name: '노무현', term: '2003–2008', years: [2003,2004,2005,2006,2007], color: '#7bed9f', varName: '--roh' },
-  { name: '이명박', term: '2008–2013', years: [2008,2009,2010,2011,2012], color: '#ff6b6b', varName: '--lee' },
-  { name: '박근혜', term: '2013–2017', years: [2013,2014,2015,2016,2017], color: '#ffa94d', varName: '--park' },
-  { name: '문재인', term: '2017–2022', years: [2017,2018,2019,2020,2021], color: '#da77f2', varName: '--moon' },
-  { name: '윤석열', term: '2022–2025', years: [2022,2023,2024], color: '#ff8787', varName: '--yoon' },
+  { name: '김대중', term: '1998.03–2003.02', start: '1998.03', end: '2003.02', idxStart: 48.3,  idxEnd: 68.0,  rate: 40.7867, color: '#4a9eff' },
+  { name: '노무현', term: '2003.03–2008.02', start: '2003.03', end: '2008.02', idxStart: 68.6,  idxEnd: 90.7,  rate: 32.2157, color: '#7bed9f' },
+  { name: '이명박', term: '2008.03–2013.02', start: '2008.03', end: '2013.02', idxStart: 91.0,  idxEnd: 101.9, rate: 11.9254, color: '#f8a04a' },
+  { name: '박근혜', term: '2013.03–2017.03', start: '2013.03', end: '2017.03', idxStart: 101.6, idxEnd: 110.4, rate: 8.5619,  color: '#a78bfa' },
+  { name: '문재인', term: '2017.05–2022.05', start: '2017.05', end: '2022.05', idxStart: 110.6, idxEnd: 143.3, rate: 29.5636, color: '#da77f2' },
+  { name: '윤석열', term: '2022.06–2025.03', start: '2022.06', end: '2025.03', idxStart: 143.1, idxEnd: 126.3, rate: -11.7815, color: '#ff6b6b' },
 ];
 
-// 누적 상승률 계산
-function calcCumulative(years) {
-  let cum = 1;
-  years.forEach(y => {
-    const d = yearlyData.find(x => x.year === y);
-    if (d) cum *= (1 + d.rate / 100);
-  });
-  return +((cum - 1) * 100).toFixed(1);
-}
+const indexPoints = [
+  { label: '1998.03', val: 48.3,  note: '김대중 시작' },
+  { label: '2003.02', val: 68.0,  note: '김대중 종료' },
+  { label: '2003.03', val: 68.6,  note: '노무현 시작' },
+  { label: '2008.02', val: 90.7,  note: '노무현 종료' },
+  { label: '2008.03', val: 91.0,  note: '이명박 시작' },
+  { label: '2013.02', val: 101.9, note: '이명박 종료' },
+  { label: '2013.03', val: 101.6, note: '박근혜 시작' },
+  { label: '2017.03', val: 110.4, note: '박근혜 종료' },
+  { label: '2017.05', val: 110.6, note: '문재인 시작' },
+  { label: '2022.05', val: 143.3, note: '문재인 종료' },
+  { label: '2022.06', val: 143.1, note: '윤석열 시작' },
+  { label: '2025.03', val: 126.3, note: '윤석열 (현재)' },
+];
 
-presidents.forEach(p => { p.cumulative = calcCumulative(p.years); });
+const pointColors = [
+  '#4a9eff','#4a9eff',
+  '#7bed9f','#7bed9f',
+  '#f8a04a','#f8a04a',
+  '#a78bfa','#a78bfa',
+  '#da77f2','#da77f2',
+  '#ff6b6b','#ff6b6b',
+];
 
-const maxAbs = Math.max(...presidents.map(p => Math.abs(p.cumulative)));
+const xLabels = ['98.03','03.02','03.03','08.02','08.03','13.02','13.03','17.03','17.05','22.05','22.06','25.03'];
 
-// ─── PRESIDENT CARDS ──────────────────────────────────────────────────────
-const container = document.getElementById('presidentCards');
-presidents.forEach((p, i) => {
-  const pct = p.cumulative;
-  const sign = pct >= 0 ? '+' : '';
-  const barW = Math.abs(pct) / maxAbs * 100;
+const maxAbs = Math.max(...presidents.map(p => Math.abs(p.rate)));
 
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.style.setProperty('--color', p.color);
-  card.innerHTML = `
+// ── CARDS ───────────────────────────────────────────────────
+const cardsEl = document.getElementById('cards');
+presidents.forEach(p => {
+  const sign = p.rate >= 0 ? '+' : '';
+  const barW = Math.abs(p.rate) / maxAbs * 100;
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.style.setProperty('--c', p.color);
+  div.innerHTML = `
     <div class="card-name">${p.name}</div>
     <div class="card-term">${p.term}</div>
-    <div class="card-pct">${sign}${pct}%</div>
-    <div class="card-pct-label">임기 누적 변동률</div>
+    <div class="card-pct">${sign}${p.rate.toFixed(2)}%</div>
+    <div class="card-label">임기 누적 변동률</div>
     <div class="card-bar-bg"><div class="card-bar" data-w="${barW}"></div></div>
   `;
-  container.appendChild(card);
+  cardsEl.appendChild(div);
 });
-
-// animate bars
 setTimeout(() => {
-  document.querySelectorAll('.card-bar').forEach(el => {
-    el.style.width = el.dataset.w + '%';
-  });
-}, 400);
+  document.querySelectorAll('.card-bar').forEach(el => { el.style.width = el.dataset.w + '%'; });
+}, 300);
 
-// ─── LINE CHART ───────────────────────────────────────────────────────────
-const lineCtx = document.getElementById('lineChart').getContext('2d');
-
-// background regions by president
-const presidentRegions = presidents.map(p => ({
-  min: Math.min(...p.years),
-  max: Math.max(...p.years) + 1,
-  color: p.color,
-  name: p.name,
-}));
-
-const bgPlugin = {
-  id: 'bgRegions',
-  beforeDraw(chart) {
-    const { ctx, chartArea, scales } = chart;
-    if (!chartArea) return;
-    presidentRegions.forEach(r => {
-      const x1 = scales.x.getPixelForValue(String(r.min));
-      const x2 = scales.x.getPixelForValue(String(r.max));
-      ctx.save();
-      ctx.fillStyle = r.color + '12';
-      ctx.fillRect(x1, chartArea.top, x2 - x1, chartArea.height);
-      ctx.fillStyle = r.color + '60';
-      ctx.font = '10px IBM Plex Mono';
-      ctx.fillText(r.name, x1 + 6, chartArea.top + 14);
-      ctx.restore();
-    });
-  }
-};
-
-new Chart(lineCtx, {
-  type: 'line',
-  plugins: [bgPlugin],
-  data: {
-    labels: yearlyData.map(d => String(d.year)),
-    datasets: [{
-      label: '전국 아파트 매매가격 변동률 (%)',
-      data: yearlyData.map(d => d.rate),
-      borderColor: '#f0c040',
-      backgroundColor: 'rgba(240,192,64,0.08)',
-      borderWidth: 2,
-      pointRadius: 4,
-      pointBackgroundColor: yearlyData.map(d => d.rate >= 0 ? '#f0c040' : '#ff6b6b'),
-      pointBorderColor: 'transparent',
-      fill: true,
-      tension: 0.35,
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: '#1e1e2e',
-        titleColor: '#f0c040',
-        bodyColor: '#e8e8f0',
-        borderColor: '#2e2e3e',
-        borderWidth: 1,
-        callbacks: {
-          label: ctx => ` ${ctx.raw > 0 ? '+' : ''}${ctx.raw}%`
-        }
-      }
-    },
-    scales: {
-      x: {
-        grid: { color: '#1e1e2e' },
-        ticks: {
-          color: '#6b6b8a',
-          font: { family: 'IBM Plex Mono', size: 10 },
-          maxRotation: 45,
-          callback: (val, i) => yearlyData[i].year % 2 === 0 ? yearlyData[i].year : ''
-        }
-      },
-      y: {
-        grid: { color: '#1e1e2e' },
-        ticks: {
-          color: '#6b6b8a',
-          font: { family: 'IBM Plex Mono', size: 10 },
-          callback: v => `${v > 0 ? '+' : ''}${v}%`
-        }
-      }
-    }
-  }
+// ── TABLE ───────────────────────────────────────────────────
+const tbody = document.getElementById('tableBody');
+presidents.forEach(p => {
+  const sign = p.rate >= 0 ? '+' : '';
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td style="color:${p.color}">${p.name}정부</td>
+    <td>${p.start} → ${p.end}</td>
+    <td>${p.idxStart} → ${p.idxEnd}</td>
+    <td style="color:${p.color}">${sign}${p.rate.toFixed(4)}%</td>
+  `;
+  tbody.appendChild(tr);
 });
 
-// ─── BAR CHART ────────────────────────────────────────────────────────────
+// ── BAR CHART ───────────────────────────────────────────────
 const barCtx = document.getElementById('barChart').getContext('2d');
 new Chart(barCtx, {
   type: 'bar',
   data: {
     labels: presidents.map(p => p.name),
     datasets: [{
-      label: '임기 누적 변동률',
-      data: presidents.map(p => p.cumulative),
-      backgroundColor: presidents.map(p => p.color + 'cc'),
-      borderColor: presidents.map(p => p.color),
+      data: presidents.map(p => +p.rate.toFixed(2)),
+      backgroundColor: presidents.map(p => p.color + 'bb'),
+      borderColor:     presidents.map(p => p.color),
       borderWidth: 1,
       borderRadius: 3,
     }]
@@ -526,16 +380,12 @@ new Chart(barCtx, {
         callbacks: {
           label: ctx => ` 누적 ${ctx.raw > 0 ? '+' : ''}${ctx.raw}%`
         }
-      },
-      datalabels: { display: false }
+      }
     },
     scales: {
       x: {
         grid: { display: false },
-        ticks: {
-          color: '#e8e8f0',
-          font: { family: 'Noto Serif KR', size: 12, weight: '700' }
-        }
+        ticks: { color: '#e8e8f0', font: { family: 'Noto Serif KR', size: 12, weight: '700' } }
       },
       y: {
         grid: { color: '#1e1e2e' },
@@ -543,6 +393,94 @@ new Chart(barCtx, {
           color: '#6b6b8a',
           font: { family: 'IBM Plex Mono', size: 10 },
           callback: v => `${v > 0 ? '+' : ''}${v}%`
+        },
+        afterDataLimits(scale) { scale.min = Math.min(scale.min, -15); }
+      }
+    }
+  }
+});
+
+// ── LINE CHART ──────────────────────────────────────────────
+const regionPlugin = {
+  id: 'presidentRegions',
+  beforeDraw(chart) {
+    const { ctx, chartArea, scales } = chart;
+    if (!chartArea) return;
+    const regions = [
+      { s:0,  e:1,  color:'#4a9eff', name:'김대중' },
+      { s:2,  e:3,  color:'#7bed9f', name:'노무현' },
+      { s:4,  e:5,  color:'#f8a04a', name:'이명박' },
+      { s:6,  e:7,  color:'#a78bfa', name:'박근혜' },
+      { s:8,  e:9,  color:'#da77f2', name:'문재인' },
+      { s:10, e:11, color:'#ff6b6b', name:'윤석열' },
+    ];
+    regions.forEach(r => {
+      const x1 = scales.x.getPixelForValue(r.s);
+      const x2 = scales.x.getPixelForValue(r.e);
+      ctx.save();
+      ctx.fillStyle = r.color + '14';
+      ctx.fillRect(x1, chartArea.top, x2 - x1, chartArea.height);
+      ctx.fillStyle = r.color + '90';
+      ctx.font = '600 10px IBM Plex Mono';
+      ctx.fillText(r.name, x1 + 5, chartArea.top + 14);
+      ctx.restore();
+    });
+  }
+};
+
+const lineCtx = document.getElementById('lineChart').getContext('2d');
+new Chart(lineCtx, {
+  type: 'line',
+  plugins: [regionPlugin],
+  data: {
+    labels: indexPoints.map((_, i) => i),
+    datasets: [{
+      label: '주택가격지수',
+      data: indexPoints.map(d => d.val),
+      borderColor: '#f0c040',
+      backgroundColor: 'rgba(240,192,64,0.07)',
+      borderWidth: 2.5,
+      pointRadius: 6,
+      pointBackgroundColor: pointColors,
+      pointBorderColor: 'transparent',
+      fill: true,
+      tension: 0.35,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1e1e2e',
+        titleColor: '#f0c040',
+        bodyColor: '#e8e8f0',
+        borderColor: '#2e2e3e',
+        borderWidth: 1,
+        callbacks: {
+          title: ctx => indexPoints[ctx[0].dataIndex].label,
+          label: ctx => {
+            const d = indexPoints[ctx.dataIndex];
+            return [`지수: ${d.val}`, d.note];
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: '#1e1e2e' },
+        ticks: {
+          color: '#6b6b8a',
+          font: { family: 'IBM Plex Mono', size: 10 },
+          callback: (_, i) => xLabels[i] || ''
+        }
+      },
+      y: {
+        grid: { color: '#1e1e2e' },
+        ticks: {
+          color: '#6b6b8a',
+          font: { family: 'IBM Plex Mono', size: 10 },
         }
       }
     }
