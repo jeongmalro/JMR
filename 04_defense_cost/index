@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>트럼프의 방위비 발언, 데이터로 확인하다 — 정말로</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;600&display=swap');
+
+  :root {
+    --bg:       #0a0a0f;
+    --surface:  #111118;
+    --surface2: #16161f;
+    --border:   #1e1e2c;
+    --text:     #e4e4f0;
+    --muted:    #5a5a78;
+    --muted2:   #8888aa;
+    --accent:   #f0c040;
+    --red:      #ff4455;
+    --green:    #44ddaa;
+    --blue:     #4a9eff;
+    --orange:   #f8a04a;
+
+    /* 대통령 색상 */
+    --clinton:  #7bed9f;
+    --roh:      #4a9eff;
+    --lee:      #f8a04a;
+    --park:     #a78bfa;
+    --moon:     #da77f2;
+    --trump1:   #ff4455;
+    --biden:    #44ddaa;
+    --trump2:   #ff6b35;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Serif KR', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  .topnav {
+    padding: 14px 48px;
+    background: rgba(10,10,15,.92);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(14px);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .topnav a { font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: .12em; color: var(--muted); text-decoration: none;
+    text-transform: uppercase; transition: color .2s; }
+  .topnav a:hover { color: var(--accent); }
+  .topnav-brand { font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    font-weight: 600; color: var(--accent); letter-spacing: .12em; }
+
+  /* ── HEADER ── */
+  header {
+    padding: 60px 48px 44px;
+    border-bottom: 1px solid var(--border);
+    position: relative; overflow: hidden;
+  }
+  header::before {
+    content: ''; position: absolute; top: -100px; right: -100px;
+    width: 480px; height: 480px;
+    background: radial-gradient(circle, rgba(255,68,85,.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: .22em; color: var(--red); text-transform: uppercase;
+    margin-bottom: 16px; }
+  h1 { font-size: clamp(24px, 3.8vw, 48px); font-weight: 900;
+    line-height: 1.15; letter-spacing: -.02em; margin-bottom: 20px; }
+  h1 em { color: var(--red); font-style: normal; }
+  h1 strong { color: var(--green); }
+  .header-meta {
+    display: flex; gap: 24px; flex-wrap: wrap;
+  }
+  .meta-chip {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: .1em; color: var(--muted2);
+    border: 1px solid var(--border); padding: 4px 12px; border-radius: 2px;
+  }
+
+  /* ── TRUMP CLAIM BOX ── */
+  .claim-box {
+    margin: 44px 48px 0;
+    background: rgba(255,68,85,.06);
+    border: 1px solid rgba(255,68,85,.3);
+    border-left: 4px solid var(--red);
+    border-radius: 4px;
+    padding: 28px 32px;
+    display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: start;
+  }
+  .claim-icon { font-size: 28px; margin-top: 2px; }
+  .claim-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: .18em; color: var(--red); text-transform: uppercase;
+    margin-bottom: 8px; }
+  .claim-text { font-size: 15px; line-height: 1.8; color: var(--text); }
+  .claim-text strong { color: var(--red); }
+  .claim-source { font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--muted); margin-top: 8px; }
+
+  /* ── MAIN ── */
+  main { padding: 44px 48px; display: grid; gap: 28px; }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: .18em; color: var(--muted); text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  /* ── STAT CARDS ── */
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 800px) { .stat-row { grid-template-columns: repeat(2,1fr); } }
+
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 22px 18px; position: relative; overflow: hidden;
+  }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 3px; background: var(--c); }
+  .stat-num { font-family: 'IBM Plex Mono', monospace; font-size: 26px;
+    font-weight: 600; color: var(--c); line-height: 1; }
+  .stat-unit { font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    color: var(--c); margin-left: 3px; }
+  .stat-label { font-size: 12px; font-weight: 700; margin-top: 8px; }
+  .stat-sub { font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--muted); margin-top: 4px; line-height: 1.5; }
+
+  /* ── CHART BOX ── */
+  .chart-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 30px;
+  }
+  .chart-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 10px; flex-wrap: wrap; gap: 10px;
+  }
+  .chart-title { font-size: 15px; font-weight: 700; }
+  .chart-sub { font-size: 12px; color: var(--muted2); margin-top: 4px; line-height: 1.6; }
+  .chart-note { font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--muted); text-align: right; line-height: 1.7; }
+  .chart-wrap { position: relative; height: 320px; margin-top: 20px; }
+  .chart-wrap.tall { height: 380px; }
+
+  /* ── LEGEND ── */
+  .legend-row {
+    display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted2);
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  /* ── PRESIDENT BANDS ── */
+  .pres-bands {
+    display: grid; grid-template-columns: repeat(8, 1fr); gap: 0;
+    margin-top: 8px; border-radius: 3px; overflow: hidden;
+  }
+  .pres-band {
+    padding: 6px 0; text-align: center;
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 600;
+    letter-spacing: .04em; color: rgba(0,0,0,.8);
+  }
+
+  /* ── DATA TABLE ── */
+  .table-box { background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; overflow: hidden; }
+  .table-box .section-label { padding: 20px 20px 0; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  thead th { background: #1a1a2e; padding: 10px 16px; text-align: right;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .08em;
+    color: var(--muted); text-transform: uppercase; font-weight: 400; }
+  thead th:first-child { text-align: left; }
+  tbody tr { border-top: 1px solid var(--border); transition: background .15s; }
+  tbody tr:hover { background: rgba(255,255,255,.02); }
+  tbody tr.trump1 { background: rgba(255,68,85,.04); }
+  tbody tr.trump2 { background: rgba(255,107,53,.04); }
+  tbody td { padding: 9px 16px; font-size: 12px; text-align: right; }
+  tbody td:first-child { text-align: left; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+  .pres-badge {
+    display: inline-block; font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; padding: 2px 7px; border-radius: 2px; font-weight: 600;
+    margin-left: 6px; vertical-align: middle;
+  }
+
+  /* ── VERDICT BOX ── */
+  .verdict-box {
+    background: rgba(68,221,170,.05);
+    border: 1px solid rgba(68,221,170,.25);
+    border-radius: 4px; padding: 28px 32px;
+    display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: start;
+  }
+  .verdict-icon { font-size: 28px; margin-top: 2px; }
+  .verdict-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: .18em; color: var(--green); text-transform: uppercase;
+    margin-bottom: 10px; }
+  .verdict-text { font-size: 14px; line-height: 1.9; color: var(--text); }
+  .verdict-text strong { color: var(--accent); }
+  .verdict-text .highlight-red { color: var(--red); font-weight: 700; }
+  .verdict-text .highlight-green { color: var(--green); font-weight: 700; }
+
+  /* ── FOOTER ── */
+  footer { padding: 28px 48px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 10px; }
+  .footer-source { font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--muted); line-height: 1.7; }
+  .footer-brand { font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    font-weight: 600; color: var(--accent); letter-spacing: .1em; }
+
+  /* ── ANIMATE ── */
+  .fade-up { opacity: 0; transform: translateY(16px); animation: fadeUp .5s ease forwards; }
+  @keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+  .d1{animation-delay:.05s}.d2{animation-delay:.12s}.d3{animation-delay:.2s}
+  .d4{animation-delay:.28s}.d5{animation-delay:.36s}.d6{animation-delay:.44s}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="topnav">
+  <a href="../index.html">← 정말로 홈</a>
+  <span class="topnav-brand">정말로</span>
+</div>
+
+<!-- HEADER -->
+<header class="fade-up">
+  <div class="eyebrow">정말로 · 팩트체크 · 데이터 분석</div>
+  <h1>트럼프는 정말<br><em>방위비를 많이 올렸나?</em><br><strong>데이터가 답한다</strong></h1>
+  <div class="header-meta">
+    <span class="meta-chip">2000 – 2025</span>
+    <span class="meta-chip">명목 vs 실질 분담금</span>
+    <span class="meta-chip">출처: 지표누리 · 국가데이터처</span>
+  </div>
+</header>
+
+<!-- TRUMP CLAIM -->
+<div class="claim-box fade-up d1">
+  <div class="claim-icon">🗣️</div>
+  <div>
+    <div class="claim-label">트럼프의 주장</div>
+    <div class="claim-text">
+      "지금 제가 재임 중이라면 한국은 방위비로 연간 <strong>100억 달러</strong>를 지불했을 것입니다.
+      기꺼이 냈을 것입니다. 한국은 <strong>'현금 인출기'</strong>입니다."<br>
+      "바이든이 내가 협상한 방위비 증액을 <strong>다 뒤집었다</strong>."
+    </div>
+    <div class="claim-source">— 트럼프 대통령, 2024.10.16 시카고 경제클럽 / 2025.08.25 한미정상회담</div>
+  </div>
+</div>
+
+<main>
+
+  <!-- STAT CARDS -->
+  <div class="fade-up d1">
+    <div class="section-label">트럼프 1기 (2017–2020) 핵심 수치</div>
+    <div class="stat-row" id="statCards"></div>
+  </div>
+
+  <!-- CHART 1: 명목 분담금 전체 추이 -->
+  <div class="chart-box fade-up d2">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">명목 방위비 분담금 추이 (2000–2025)</div>
+        <div class="chart-sub">단위: 억원 · 대통령 구간 색상 구분</div>
+      </div>
+      <div class="chart-note">출처: 지표누리 방위비분담특별협정<br>트럼프 1기 강조 표시</div>
+    </div>
+    <div class="pres-bands" id="presBands"></div>
+    <div class="chart-wrap"><canvas id="nominalChart"></canvas></div>
+    <div class="legend-row" id="nominalLegend"></div>
+  </div>
+
+  <!-- CHART 2: 명목 vs 실질 상승률 비교 -->
+  <div class="chart-box fade-up d3">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">명목 vs 실질 분담금 상승률 비교 (전년 대비 %)</div>
+        <div class="chart-sub">물가 반영 후 실질 상승률은 명목보다 훨씬 낮음</div>
+      </div>
+      <div class="chart-note">실질 = 명목 ÷ 소비자물가지수<br>기준: 2000년 = 100</div>
+    </div>
+    <div class="chart-wrap tall"><canvas id="rateChart"></canvas></div>
+    <div class="legend-row">
+      <div class="legend-item"><div class="legend-dot" style="background:#f0c040"></div>명목 상승률</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#4a9eff"></div>실질 상승률 (물가 반영)</div>
+    </div>
+  </div>
+
+  <!-- CHART 3: 대통령별 임기 평균 실질 상승률 -->
+  <div class="chart-box fade-up d4">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">대통령별 임기 중 실질 분담금 평균 상승률</div>
+        <div class="chart-sub">물가 반영 기준 — 트럼프 1기는 어느 위치?</div>
+      </div>
+      <div class="chart-note">트럼프 1기: 2017–2020<br>🔴 트럼프 구간 강조</div>
+    </div>
+    <div class="chart-wrap"><canvas id="presChart"></canvas></div>
+  </div>
+
+  <!-- DATA TABLE -->
+  <div class="table-box fade-up d5">
+    <div class="section-label">연도별 원본 데이터</div>
+    <table>
+      <thead>
+        <tr>
+          <th>연도</th>
+          <th>명목 분담금 (억원)</th>
+          <th>명목 상승률 (%)</th>
+          <th>물가지수</th>
+          <th>실질 분담금</th>
+          <th>실질 상승률 (%)</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- VERDICT -->
+  <div class="verdict-box fade-up d6">
+    <div class="verdict-icon">🔍</div>
+    <div>
+      <div class="verdict-label">팩트체크 결론</div>
+      <div class="verdict-text">
+        트럼프 1기(2017–2020) 명목 방위비 분담금은 9,507억→10,389억원으로 증가했지만,
+        <span class="highlight-red">연평균 실질 상승률은 약 +1.6%</span>로
+        역대 정부 중 특별히 높지 않습니다.<br><br>
+        오히려 <span class="highlight-green">문재인 정부(2017–2022) 전체로 보면 2021년 +11.1%의 실질 상승</span>이
+        바이든 행정부 시절에 합의된 것이며, 이는 트럼프 1기의 교착상태를 해소하기 위한 것이었습니다.<br><br>
+        트럼프의 "내가 방위비를 많이 올렸다"는 주장은
+        <strong>명목 수치만을 기준으로 한 것</strong>으로, 물가를 반영한 실질 기준으로는
+        다른 정부들과 큰 차이가 없습니다.
+        정말로는 데이터만 전달합니다 — 판단은 여러분의 몫입니다.
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-source">
+    출처: 지표누리 「방위비분담특별협정」 · 국가데이터처 「소비자물가조사」 · 지표누리 「소비자물가상승률」<br>
+    분석: 정말로 자체 분석 (명목 분담금 ÷ CPI × 100 = 실질 분담금)
+  </div>
+  <div class="footer-brand">정말로</div>
+</footer>
+
+<script>
+// ── 원본 데이터 ──────────────────────────────────────────────
+const years = [2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+
+const nominal = [4685,4882,6135,6690,7465,6804,6804,7255,7415,7600,7904,8125,8361,8695,9200,9320,9441,9507,9602,10389,10389,11833,12472,12896,13463,14028];
+
+const cpi = [100,104.1,107.01,110.76,114.75,117.96,120.56,123.57,129.38,133.0,136.86,142.33,145.46,147.35,149.27,150.31,151.82,154.70,157.02,157.65,158.44,162.40,170.68,176.83,180.89,184.69];
+
+const realNominal = [46.85,46.90,57.33,60.40,65.06,57.68,56.44,58.71,57.31,57.14,57.75,57.09,57.48,59.01,61.63,62.00,62.19,61.45,61.15,65.90,65.57,72.86,73.07,72.93,74.43,75.95];
+
+const nominalRate = [null,4.20,25.67,9.05,11.58,-8.85,0,6.63,2.21,2.49,4.0,2.80,2.90,3.99,5.81,1.30,1.30,0.70,1.00,8.20,0,13.90,5.40,3.40,4.40,4.20];
+
+const realRate = [null,0.10,22.24,5.36,7.71,-11.34,-2.15,4.03,-2.38,-0.30,1.07,-1.16,0.69,2.66,4.45,0.60,0.30,-1.18,-0.49,7.77,-0.50,11.12,0.29,-0.19,2.05,2.05];
+
+// 대통령 구간
+const presidents = [
+  { name: '김대중',  start: 2000, end: 2002, color: '#7bed9f' },
+  { name: '노무현',  start: 2003, end: 2007, color: '#4a9eff' },
+  { name: '이명박',  start: 2008, end: 2012, color: '#f8a04a' },
+  { name: '박근혜',  start: 2013, end: 2016, color: '#a78bfa' },
+  { name: '문재인',  start: 2017, end: 2021, color: '#da77f2' },
+  { name: '트럼프1', start: 2017, end: 2020, color: '#ff4455', isTrump: true },
+  { name: '바이든',  start: 2021, end: 2024, color: '#44ddaa' },
+  { name: '트럼프2', start: 2025, end: 2025, color: '#ff6b35', isTrump: true },
+];
+
+// 한국 대통령 (차트용)
+const korPres = [
+  { name: '김대중', start: 2000, end: 2002, color: '#7bed9f' },
+  { name: '노무현', start: 2003, end: 2007, color: '#4a9eff' },
+  { name: '이명박', start: 2008, end: 2012, color: '#f8a04a' },
+  { name: '박근혜', start: 2013, end: 2016, color: '#a78bfa' },
+  { name: '문재인', start: 2017, end: 2021, color: '#da77f2' },
+  { name: '윤석열', start: 2022, end: 2024, color: '#88aaff' },
+  { name: '이재명', start: 2025, end: 2025, color: '#ffcc44' },
+];
+
+// 미국 대통령 (트럼프 구간 강조용)
+const usPres = [
+  { name: '클린턴', start: 2000, end: 2000, color: '#7bed9f' },
+  { name: '부시',   start: 2001, end: 2008, color: '#f8a04a' },
+  { name: '오바마', start: 2009, end: 2016, color: '#4a9eff' },
+  { name: 'TRUMP1', start: 2017, end: 2020, color: '#ff4455', isTrump: true },
+  { name: '바이든', start: 2021, end: 2024, color: '#44ddaa' },
+  { name: 'TRUMP2', start: 2025, end: 2025, color: '#ff6b35', isTrump: true },
+];
+
+function getYearIdx(y) { return years.indexOf(y); }
+
+// ── STAT CARDS ───────────────────────────────────────────────
+const statDefs = [
+  { label: '트럼프1기 명목 상승', num: '+9.3', unit: '%', sub: '2016→2020\n9,441→10,389억원', c: '#ff4455' },
+  { label: '트럼프1기 실질 상승', num: '+0.6', unit: '%', sub: '물가 반영 기준\n4년 누적', c: '#f0c040' },
+  { label: '2019년 타결 명목 상승', num: '+8.2', unit: '%', sub: '교착 후 1년 협정\n9,602→10,389억', c: '#f8a04a' },
+  { label: '바이든기 2021년 명목', num: '+13.9', unit: '%', sub: '트럼프1기 교착 해소\n역대 최대 단년 인상', c: '#44ddaa' },
+];
+const statCards = document.getElementById('statCards');
+statDefs.forEach(s => {
+  const div = document.createElement('div');
+  div.className = 'stat-card';
+  div.style.setProperty('--c', s.c);
+  div.innerHTML = `<div><span class="stat-num">${s.num}</span><span class="stat-unit">${s.unit}</span></div>
+    <div class="stat-label">${s.label}</div>
+    <div class="stat-sub">${s.sub.replace('\n','<br>')}</div>`;
+  statCards.appendChild(div);
+});
+
+// ── PRESIDENT BANDS ──────────────────────────────────────────
+const bandsEl = document.getElementById('presBands');
+usPres.forEach(p => {
+  const count = p.end - p.start + 1;
+  const div = document.createElement('div');
+  div.className = 'pres-band';
+  div.style.background = p.color;
+  div.style.gridColumn = `span ${count}`;
+  div.style.flex = count;
+  div.textContent = p.name;
+  bandsEl.appendChild(div);
+});
+
+// ── COMMON CHART OPTIONS ─────────────────────────────────────
+const gridColor = '#1e1e2c';
+const tooltipStyle = {
+  backgroundColor: '#1a1a2e', titleColor: '#f0c040',
+  bodyColor: '#e4e4f0', borderColor: '#2e2e3e', borderWidth: 1
+};
+
+// ── BACKGROUND REGION PLUGIN ─────────────────────────────────
+function makeBgPlugin(presArr) {
+  return {
+    id: 'bgRegions',
+    beforeDraw(chart) {
+      const { ctx, chartArea, scales } = chart;
+      if (!chartArea) return;
+      presArr.forEach(p => {
+        const si = getYearIdx(p.start);
+        const ei = getYearIdx(p.end);
+        if (si < 0 || ei < 0) return;
+        const x1 = scales.x.getPixelForValue(si);
+        const x2 = scales.x.getPixelForValue(ei);
+        ctx.save();
+        ctx.fillStyle = p.color + (p.isTrump ? '22' : '0d');
+        ctx.fillRect(x1, chartArea.top, x2 - x1 + scales.x.width / years.length, chartArea.height);
+        if (p.isTrump) {
+          ctx.strokeStyle = p.color + '55';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 3]);
+          ctx.strokeRect(x1, chartArea.top, x2 - x1 + scales.x.width / years.length, chartArea.height);
+          ctx.setLineDash([]);
+        }
+        ctx.fillStyle = p.color + 'bb';
+        ctx.font = `${p.isTrump ? '700' : '600'} 9px IBM Plex Mono`;
+        ctx.fillText(p.name, x1 + 4, chartArea.top + 13);
+        ctx.restore();
+      });
+    }
+  };
+}
+
+const xTicks = {
+  color: '#5a5a78', font: { family: 'IBM Plex Mono', size: 10 },
+  callback: (_, i) => years[i] % 4 === 0 ? `'${String(years[i]).slice(2)}` : ''
+};
+const yTicksPct = {
+  color: '#5a5a78', font: { family: 'IBM Plex Mono', size: 10 },
+  callback: v => `${v > 0 ? '+' : ''}${v}%`
+};
+
+// ── CHART 1: 명목 분담금 ────────────────────────────────────
+new Chart(document.getElementById('nominalChart').getContext('2d'), {
+  type: 'bar',
+  plugins: [makeBgPlugin(usPres)],
+  data: {
+    labels: years.map((_, i) => i),
+    datasets: [{
+      label: '명목 분담금 (억원)',
+      data: nominal,
+      backgroundColor: years.map((y, i) => {
+        const isTrump = (y >= 2017 && y <= 2020) || y === 2025;
+        return isTrump ? 'rgba(255,68,85,.75)' : 'rgba(240,192,64,.55)';
+      }),
+      borderColor: years.map((y) => {
+        const isTrump = (y >= 2017 && y <= 2020) || y === 2025;
+        return isTrump ? '#ff4455' : '#f0c040';
+      }),
+      borderWidth: 1, borderRadius: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { ...tooltipStyle,
+        callbacks: {
+          title: ctx => `${years[ctx[0].dataIndex]}년`,
+          label: ctx => ` ${ctx.raw.toLocaleString()}억원`
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: xTicks },
+      y: { grid: { color: gridColor },
+        ticks: { color: '#5a5a78', font: { family: 'IBM Plex Mono', size: 10 },
+          callback: v => `${(v/10000).toFixed(0)}조` } }
+    }
+  }
+});
+
+// 범례
+const legendEl = document.getElementById('nominalLegend');
+legendEl.innerHTML = `
+  <div class="legend-item"><div class="legend-dot" style="background:#f0c040"></div>일반 구간</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ff4455"></div>트럼프 구간 (2017-2020, 2025)</div>
+`;
+
+// ── CHART 2: 명목 vs 실질 상승률 ────────────────────────────
+const validYears = years.slice(1);
+const validNomRate = nominalRate.slice(1);
+const validRealRate = realRate.slice(1);
+
+new Chart(document.getElementById('rateChart').getContext('2d'), {
+  type: 'bar',
+  plugins: [makeBgPlugin(usPres)],
+  data: {
+    labels: validYears.map((_, i) => i + 1),
+    datasets: [
+      {
+        label: '명목 상승률',
+        data: validNomRate,
+        backgroundColor: validYears.map(y => {
+          const isTrump = (y >= 2017 && y <= 2020) || y === 2025;
+          return isTrump ? 'rgba(255,68,85,.8)' : 'rgba(240,192,64,.65)';
+        }),
+        borderColor: validYears.map(y => {
+          const isTrump = (y >= 2017 && y <= 2020) || y === 2025;
+          return isTrump ? '#ff4455' : '#f0c040';
+        }),
+        borderWidth: 1, borderRadius: 2, order: 2,
+      },
+      {
+        label: '실질 상승률 (물가 반영)',
+        data: validRealRate,
+        type: 'line',
+        borderColor: '#4a9eff',
+        backgroundColor: 'rgba(74,158,255,.1)',
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointBackgroundColor: validYears.map(y => {
+          const isTrump = (y >= 2017 && y <= 2020) || y === 2025;
+          return isTrump ? '#ff4455' : '#4a9eff';
+        }),
+        pointBorderColor: 'transparent',
+        fill: false, tension: 0.3, order: 1,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { ...tooltipStyle,
+        callbacks: {
+          title: ctx => `${validYears[ctx[0].dataIndex]}년`,
+          label: ctx => ` ${ctx.dataset.label}: ${ctx.raw > 0 ? '+' : ''}${ctx.raw?.toFixed(2)}%`
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: gridColor },
+        ticks: {
+          color: '#5a5a78', font: { family: 'IBM Plex Mono', size: 10 },
+          callback: (_, i) => validYears[i] % 4 === 0 ? `'${String(validYears[i]).slice(2)}` : ''
+        }
+      },
+      y: { grid: { color: gridColor }, ticks: yTicksPct }
+    }
+  }
+});
+
+// ── CHART 3: 대통령별 실질 평균 상승률 ──────────────────────
+const presAvg = [
+  { name: '클린턴\n(미)', years: [2000], color: '#7bed9f' },
+  { name: '부시\n(미)', years: [2001,2002,2003,2004,2005,2006,2007,2008], color: '#f8a04a' },
+  { name: '오바마\n(미)', years: [2009,2010,2011,2012,2013,2014,2015,2016], color: '#4a9eff' },
+  { name: '트럼프1\n(미)', years: [2017,2018,2019,2020], color: '#ff4455', isTrump: true },
+  { name: '바이든\n(미)', years: [2021,2022,2023,2024], color: '#44ddaa' },
+  { name: '트럼프2\n(미)', years: [2025], color: '#ff6b35', isTrump: true },
+];
+
+const presAvgData = presAvg.map(p => {
+  const rates = p.years.map(y => {
+    const i = years.indexOf(y);
+    return realRate[i];
+  }).filter(r => r !== null && !isNaN(r));
+  const avg = rates.reduce((a, b) => a + b, 0) / rates.length;
+  return { ...p, avg: +avg.toFixed(2) };
+});
+
+new Chart(document.getElementById('presChart').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: presAvgData.map(p => p.name),
+    datasets: [{
+      data: presAvgData.map(p => p.avg),
+      backgroundColor: presAvgData.map(p => p.color + (p.isTrump ? 'cc' : '88')),
+      borderColor: presAvgData.map(p => p.color),
+      borderWidth: p => p.isTrump ? 2 : 1,
+      borderRadius: 3,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { ...tooltipStyle,
+        callbacks: {
+          label: ctx => ` 실질 평균 상승률: ${ctx.raw > 0 ? '+' : ''}${ctx.raw}%`
+        }
+      }
+    },
+    scales: {
+      x: { grid: { display: false },
+        ticks: { color: '#8888aa', font: { family: 'IBM Plex Mono', size: 10 },
+          maxRotation: 0 }
+      },
+      y: { grid: { color: gridColor }, ticks: yTicksPct }
+    }
+  }
+});
+
+// ── DATA TABLE ───────────────────────────────────────────────
+const tbody = document.getElementById('tableBody');
+years.forEach((y, i) => {
+  const isTrump1 = y >= 2017 && y <= 2020;
+  const isTrump2 = y === 2025;
+  const tr = document.createElement('tr');
+  if (isTrump1) tr.className = 'trump1';
+  if (isTrump2) tr.className = 'trump2';
+
+  const badge = isTrump1
+    ? `<span class="pres-badge" style="background:rgba(255,68,85,.2);color:#ff4455;border:1px solid rgba(255,68,85,.4)">TRUMP1</span>`
+    : isTrump2
+      ? `<span class="pres-badge" style="background:rgba(255,107,53,.2);color:#ff6b35;border:1px solid rgba(255,107,53,.4)">TRUMP2</span>`
+      : '';
+
+  const nr = nominalRate[i] !== null ? `${nominalRate[i] > 0 ? '+' : ''}${nominalRate[i]?.toFixed(2)}%` : '—';
+  const rr = realRate[i] !== null ? `${realRate[i] > 0 ? '+' : ''}${realRate[i]?.toFixed(2)}%` : '—';
+  const rrColor = realRate[i] > 0 ? '#44ddaa' : realRate[i] < 0 ? '#ff4455' : '#8888aa';
+
+  tr.innerHTML = `
+    <td>${y}년 ${badge}</td>
+    <td>${nominal[i].toLocaleString()}</td>
+    <td style="color:${nominalRate[i]>0?'#f0c040':'#ff4455'}">${nr}</td>
+    <td>${cpi[i].toFixed(1)}</td>
+    <td>${realNominal[i].toFixed(2)}</td>
+    <td style="color:${rrColor}">${rr}</td>
+  `;
+  tbody.appendChild(tr);
+});
+</script>
+</body>
+</html>
