@@ -634,7 +634,7 @@
   </p>
   <div class="hero-stats">
     <div class="stat-item">
-      <span class="stat-num">1</span>
+      <span class="stat-num">4</span>
       <span class="stat-label">Published</span>
     </div>
     <div class="stat-item">
@@ -660,7 +660,7 @@
       <p class="section-eyebrow">데이터 분석 아카이브</p>
       <h2 class="section-title">모든 분석 보기</h2>
     </div>
-    <span class="section-count">1 published · 2 coming soon</span>
+    <span class="section-count">4 published</span>
   </div>
 
   <div class="cards-grid" id="cardsGrid">
@@ -699,79 +699,43 @@
         <span class="card-arrow">분석 보기 →</span>
       </div>
     </a>
-
-    <!-- CARD 2: 야근 (커밍순) -->
-    <div class="card card-coming"
-         style="--card-color: #4499ff;"
-         data-delay="100">
+    
+    <!-- CARD 2: 방위비 팩트체크 (라이브) -->
+    <a class="card"
+       href="./04_defense_cost/index.html"
+       style="--card-color: #f0c040;"
+       data-delay="300">
       <div class="card-thumb">
         <div class="card-thumb-inner">
-          <div class="thumb-line-wrap">
-            <svg class="thumb-line-svg" viewBox="0 0 200 80" fill="none">
-              <polyline points="0,60 20,55 40,50 60,30 80,25 100,40 120,20 140,35 160,15 180,25 200,10"
-                stroke="#4499ff" stroke-width="2" fill="none" opacity="0.7"/>
-              <polyline points="0,70 20,65 40,68 60,55 80,60 100,50 120,58 140,45 160,52 180,40 200,45"
-                stroke="#7bed9f" stroke-width="2" fill="none" opacity="0.5"/>
-            </svg>
+          <div class="thumb-bars" style="align-items:flex-end;padding:20px 20px 0;">
+            <div class="thumb-bar" style="height:45%;background:#7bed9f;"></div>
+            <div class="thumb-bar" style="height:50%;background:#f8a04a;"></div>
+            <div class="thumb-bar" style="height:48%;background:#4a9eff;"></div>
+            <div class="thumb-bar" style="height:52%;background:#ff4455;position:relative;">
+              <div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-family:'IBM Plex Mono',monospace;font-size:9px;color:#ff4455;white-space:nowrap;">TRUMP</div>
+            </div>
+            <div class="thumb-bar" style="height:65%;background:#44ddaa;"></div>
+            <div class="thumb-bar" style="height:70%;background:#f0c040;"></div>
           </div>
         </div>
       </div>
       <div class="card-body">
         <div class="card-meta">
-          <span class="card-no">No.02</span>
+          <span class="card-no">No.04</span>
           <div class="card-tags">
-            <span class="tag tag-blue">노동</span>
-            <span class="tag tag-green">OECD</span>
-          </div>
-        </div>
-        <h3 class="card-title">야근을 가장 많이<br>하는 나라는?</h3>
-        <p class="card-desc">OECD 국가별 연간 노동시간 데이터로 한국의 위치를 확인합니다.</p>
-      </div>
-      <div class="card-footer">
-        <span class="coming-badge">Coming Soon</span>
-        <span class="card-date">준비 중</span>
-      </div>
-    </div>
-
-    <!-- CARD 3: 저출생 (커밍순) -->
-    <div class="card card-coming"
-         style="--card-color: #44ddaa;"
-         data-delay="200">
-      <div class="card-thumb">
-        <div class="card-thumb-inner">
-          <div class="thumb-dots">
-            <div class="thumb-dot" style="background:#44ddaa;height:28px;"></div>
-            <div class="thumb-dot" style="background:#44ddaa;height:22px;opacity:0.7;"></div>
-            <div class="thumb-dot" style="background:#f0c040;height:32px;"></div>
-            <div class="thumb-dot" style="background:#ff5566;height:18px;opacity:0.6;"></div>
-            <div class="thumb-dot" style="background:#44ddaa;height:26px;opacity:0.8;"></div>
-            <div class="thumb-dot" style="background:#f0c040;height:20px;opacity:0.7;"></div>
-            <div class="thumb-dot" style="background:#ff5566;height:24px;"></div>
-            <div class="thumb-dot" style="background:#44ddaa;height:16px;opacity:0.5;"></div>
-            <div class="thumb-dot" style="background:#f0c040;height:30px;opacity:0.9;"></div>
-            <div class="thumb-dot" style="background:#ff5566;height:22px;opacity:0.7;"></div>
-            <div class="thumb-dot" style="background:#44ddaa;height:18px;"></div>
-            <div class="thumb-dot" style="background:#f0c040;height:26px;opacity:0.8;"></div>
-          </div>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="card-meta">
-          <span class="card-no">No.03</span>
-          <div class="card-tags">
-            <span class="tag tag-green">저출생</span>
-            <span class="tag tag-gold">예산</span>
+            <span class="tag tag-gold">방위비</span>
             <span class="tag tag-red">팩트체크</span>
+            <span class="tag tag-green">실질 vs 명목</span>
           </div>
         </div>
-        <h3 class="card-title">"수백조 썼다"는 말,<br>사실인가?</h3>
-        <p class="card-desc">저출생 대책 예산의 실제 규모와 집행 현황을 공공데이터로 검증합니다.</p>
+        <h3 class="card-title">트럼프는 정말<br>방위비를 많이 올렸나?</h3>
+        <p class="card-desc">명목 수치와 물가 반영 실질 수치를 분리해 트럼프의 방위비 자랑을 데이터로 검증합니다.</p>
       </div>
       <div class="card-footer">
-        <span class="coming-badge">Coming Soon</span>
-        <span class="card-date">준비 중</span>
+        <span class="card-date">2025.04</span>
+        <span class="card-arrow">분석 보기 →</span>
       </div>
-    </div>
+    </a>
 
   </div>
 </section>
@@ -779,11 +743,11 @@
 <!-- ABOUT STRIP -->
 <section class="about-strip" id="about">
   <div>
-    <p class="about-label">정말로란</p>
+    <p class="about-label">팀 정말로란</p>
     <h2 class="about-title">데이터가 말하게<br>우리는 전달합니다</h2>
     <p class="about-body">
       정치인의 발언, 정부의 통계, 미디어의 주장 —<br>
-      <strong>정말로</strong>는 모든 주장을 공공데이터와 데이터 분석으로 검증합니다.<br><br>
+      <strong>팀 정말로</strong>는 모든 주장을 공공데이터와 데이터 분석으로 검증합니다.<br><br>
       편향 없이, 과장 없이.<br>
       <strong>숫자가 보여주는 것만 전달합니다.</strong>
     </p>
@@ -806,8 +770,8 @@
     <div class="principle">
       <div class="principle-icon">🔓</div>
       <div class="principle-text">
-        <strong>신속 정확</strong>
-        <span>최신 이슈들을 기반으로 데이터 분석을 신속하고 정확하게 합니다.</span>
+        <strong>분석 코드 공개</strong>
+        <span>모든 분석 코드와 원본 데이터를 공개해 누구나 검증할 수 있습니다.</span>
       </div>
     </div>
   </div>
@@ -815,7 +779,7 @@
 
 <!-- FOOTER -->
 <footer>
-  <span class="footer-brand">정말로</span>
+  <span class="footer-brand">팀 정말로</span>
   <span class="footer-copy">데이터로 확인하고, 팩트로 말합니다 · © 2025</span>
 </footer>
 
