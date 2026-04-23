@@ -3,482 +3,868 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>대통령별 전국 아파트값 변동</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<title>정말로 — 데이터로 확인하고, 팩트로 말합니다</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap');
+  /* ── RESET & BASE ────────────────────────────────────────── */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
   :root {
-    --bg:#0a0a0f; --surface:#12121a; --border:#1e1e2e;
-    --text:#e8e8f0; --muted:#6b6b8a; --accent:#f0c040;
+    --bg:       #0a0a0f;
+    --surface:  #111118;
+    --surface2: #16161f;
+    --border:   #1e1e2c;
+    --border2:  #2a2a3a;
+    --text:     #e4e4f0;
+    --muted:    #5a5a78;
+    --muted2:   #8888aa;
+    --accent:   #f0c040;
+    --accent2:  #d4a830;
+    --red:      #ff5566;
+    --green:    #44ddaa;
+    --blue:     #4499ff;
   }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:var(--bg);color:var(--text);font-family:'Noto Serif KR',serif;min-height:100vh;}
 
-  /* HEADER */
-  header{padding:52px 48px 36px;border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
-  header::before{content:'';position:absolute;top:-80px;left:-80px;width:360px;height:360px;
-    background:radial-gradient(circle,rgba(240,192,64,.06) 0%,transparent 70%);pointer-events:none;}
-  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;
-    color:var(--accent);text-transform:uppercase;margin-bottom:14px;}
-  h1{font-size:clamp(26px,4vw,50px);font-weight:900;line-height:1.1;letter-spacing:-.02em;}
-  h1 span{color:var(--accent);}
-  .subtitle{margin-top:12px;font-size:13px;color:var(--muted);font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;}
+  html { scroll-behavior: smooth; }
 
-  /* MAIN */
-  main{padding:44px 48px;display:grid;gap:28px;}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Serif KR', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-  .section-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;
-    color:var(--muted);text-transform:uppercase;margin-bottom:14px;}
+  /* ── NOISE OVERLAY ───────────────────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
 
-  /* CARDS */
-  .cards{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
-  @media(max-width:960px){.cards{grid-template-columns:repeat(3,1fr);}}
-  @media(max-width:560px){.cards{grid-template-columns:repeat(2,1fr);}}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:4px;
-    padding:20px 16px;position:relative;overflow:hidden;transition:border-color .2s,transform .15s;}
-  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--c);}
-  .card:hover{transform:translateY(-2px);border-color:var(--c);}
-  .card-name{font-size:14px;font-weight:700;margin-bottom:3px;}
-  .card-term{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px;}
-  .card-pct{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:var(--c);}
-  .card-label{font-size:10px;color:var(--muted);margin-top:2px;}
-  .card-bar-bg{margin-top:12px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
-  .card-bar{height:100%;background:var(--c);border-radius:2px;
-    transition:width 1.2s cubic-bezier(.16,1,.3,1);width:0;}
+  /* ── NAV ─────────────────────────────────────────────────── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 52px;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
 
-  /* CHART BOX */
-  .chart-box{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:30px;}
-  .chart-box-header{display:flex;justify-content:space-between;align-items:flex-start;
-    margin-bottom:24px;flex-wrap:wrap;gap:10px;}
-  .chart-title{font-size:15px;font-weight:700;}
-  .chart-note{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);text-align:right;line-height:1.7;}
-  .chart-wrap{position:relative;height:300px;}
-  .chart-wrap.tall{height:360px;}
+  .nav-logo {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-decoration: none;
+  }
 
-  /* TAB TOGGLE */
-  .tab-row{display:flex;gap:8px;margin-bottom:20px;}
-  .tab-btn{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;
-    padding:6px 14px;border-radius:3px;border:1px solid var(--border);
-    background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;}
-  .tab-btn.active{background:var(--accent);color:#111;border-color:var(--accent);font-weight:600;}
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+  }
 
-  /* TABLE */
-  .table-box{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
-  .table-box .section-label{padding:20px 20px 0;}
-  table{width:100%;border-collapse:collapse;margin-top:12px;}
-  thead th{background:#1a1a2e;padding:12px 20px;text-align:left;
-    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;
-    color:var(--muted);text-transform:uppercase;font-weight:400;}
-  thead th:nth-child(3),thead th:nth-child(4){text-align:right;}
-  tbody tr{border-top:1px solid var(--border);}
-  tbody tr:hover{background:rgba(255,255,255,.02);}
-  tbody td{padding:11px 20px;font-size:13px;}
-  tbody td:nth-child(1){font-weight:700;}
-  tbody td:nth-child(2){font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);}
-  tbody td:nth-child(3){font-family:'IBM Plex Mono',monospace;font-size:12px;text-align:right;}
-  tbody td:nth-child(4){font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;text-align:right;}
+  .nav-links a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--muted2);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
 
-  /* INSIGHT */
-  .insight-box{background:color-mix(in srgb,var(--accent) 5%,var(--surface));
-    border:1px solid color-mix(in srgb,var(--accent) 25%,var(--border));
-    border-radius:4px;padding:26px 30px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;}
-  .insight-icon{font-size:26px;margin-top:2px;}
-  .insight-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;
-    color:var(--accent);text-transform:uppercase;margin-bottom:8px;}
-  .insight-text{font-size:14px;line-height:1.85;color:var(--text);}
-  .insight-text strong{color:var(--accent);}
+  .nav-links a:hover { color: var(--text); }
 
-  /* FOOTER */
-  footer{padding:28px 48px;border-top:1px solid var(--border);
-    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
-  .footer-source{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);line-height:1.7;}
-  .footer-brand{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;
-    color:var(--accent);letter-spacing:.1em;}
+  /* ── HERO ────────────────────────────────────────────────── */
+  .hero {
+    position: relative;
+    text-align: center;
+    padding: 120px 52px 100px;
+    overflow: hidden;
+    z-index: 1;
+  }
 
-  /* ANIMATE */
-  .fade-up{opacity:0;transform:translateY(18px);animation:fadeUp .55s ease forwards;}
-  @keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
-  .d1{animation-delay:.08s}.d2{animation-delay:.18s}.d3{animation-delay:.28s}
-  .d4{animation-delay:.38s}.d5{animation-delay:.48s}.d6{animation-delay:.56s}.d7{animation-delay:.64s}
+  /* 배경 그리드 라인 */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  /* 골드 글로우 */
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -60%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(240,192,64,0.09) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.7s 0.1s ease forwards;
+  }
+
+  .hero-title {
+    font-size: clamp(52px, 8vw, 100px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.0;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 0.7s 0.2s ease forwards;
+  }
+
+  .hero-title .line2 {
+    display: block;
+    color: var(--accent);
+    position: relative;
+  }
+
+  .hero-desc {
+    font-size: 16px;
+    color: var(--muted2);
+    line-height: 1.9;
+    max-width: 520px;
+    margin: 0 auto 48px;
+    font-weight: 400;
+    opacity: 0;
+    animation: fadeUp 0.7s 0.3s ease forwards;
+  }
+
+  .hero-desc strong { color: var(--accent); font-weight: 700; }
+
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.7s 0.4s ease forwards;
+  }
+
+  .stat-item { text-align: center; }
+
+  .stat-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--accent);
+    display: block;
+  }
+
+  .stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ── TICKER ──────────────────────────────────────────────── */
+  .ticker-wrap {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    overflow: hidden;
+    padding: 12px 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ticker-track {
+    display: flex;
+    gap: 0;
+    animation: ticker 30s linear infinite;
+    width: max-content;
+  }
+
+  .ticker-item {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding: 0 32px;
+    white-space: nowrap;
+  }
+
+  .ticker-item span { color: var(--accent); margin-right: 8px; }
+
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── SECTION HEADER ──────────────────────────────────────── */
+  .section-wrap {
+    padding: 80px 52px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .section-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .section-title {
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+
+  .section-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── CARDS GRID ──────────────────────────────────────────── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  @media (max-width: 900px)  { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px)  { .cards-grid { grid-template-columns: 1fr; } }
+
+  /* ── CARD ────────────────────────────────────────────────── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  .card.visible {
+    animation: cardIn 0.5s ease forwards;
+  }
+
+  @keyframes cardIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent2);
+    box-shadow: 0 20px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(240,192,64,0.1);
+  }
+
+  .card:hover .card-arrow { opacity: 1; transform: translateX(0); }
+  .card:hover .card-thumb-inner { transform: scale(1.04); }
+
+  /* 상단 컬러 바 */
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-color, var(--accent));
+    transition: height 0.25s;
+  }
+  .card:hover::before { height: 3px; }
+
+  /* 썸네일 */
+  .card-thumb {
+    height: 180px;
+    background: var(--surface2);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .card-thumb-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.4s ease;
+    position: relative;
+  }
+
+  /* 각 카드별 썸네일 비주얼 */
+  .thumb-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 24px 28px;
+    width: 100%;
+    height: 100%;
+  }
+
+  .thumb-bar {
+    flex: 1;
+    border-radius: 3px 3px 0 0;
+    opacity: 0.85;
+    transition: opacity 0.3s;
+  }
+
+  .card:hover .thumb-bar { opacity: 1; }
+
+  .thumb-line-wrap {
+    width: 100%;
+    height: 100%;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .thumb-line-svg { width: 100%; height: 100%; }
+
+  .thumb-dots {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    padding: 28px;
+    align-items: end;
+  }
+
+  .thumb-dot {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    opacity: 0.7;
+  }
+
+  /* 카드 본문 */
+  .card-body {
+    padding: 24px 24px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-no {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .card-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 2px;
+    border: 1px solid;
+    opacity: 0.85;
+  }
+
+  .tag-gold   { color: var(--accent);  border-color: rgba(240,192,64,0.35); background: rgba(240,192,64,0.06); }
+  .tag-blue   { color: var(--blue);    border-color: rgba(68,153,255,0.35); background: rgba(68,153,255,0.06); }
+  .tag-green  { color: var(--green);   border-color: rgba(68,221,170,0.35); background: rgba(68,221,170,0.06); }
+  .tag-red    { color: var(--red);     border-color: rgba(255,85,102,0.35); background: rgba(255,85,102,0.06); }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--muted2);
+    line-height: 1.7;
+    flex: 1;
+  }
+
+  .card-footer {
+    padding: 14px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-date {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  .card-arrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 0.2s, transform 0.2s;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── COMING SOON 카드 ────────────────────────────────────── */
+  .card-coming {
+    opacity: 0.45 !important;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .card-coming:hover { transform: none; border-color: var(--border); box-shadow: none; }
+  .coming-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--border2);
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+
+  /* ── ABOUT STRIP ─────────────────────────────────────────── */
+  .about-strip {
+    margin: 0 52px 80px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    padding: 44px 52px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .about-strip::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(240,192,64,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  @media (max-width: 760px) { .about-strip { grid-template-columns: 1fr; } }
+
+  .about-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .about-title {
+    font-size: clamp(20px, 2.5vw, 28px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    margin-bottom: 16px;
+  }
+
+  .about-body {
+    font-size: 14px;
+    color: var(--muted2);
+    line-height: 1.9;
+  }
+
+  .about-body strong { color: var(--text); }
+
+  .about-principles {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .principle {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+
+  .principle-icon {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    background: var(--surface2);
+  }
+
+  .principle-text strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .principle-text span {
+    font-size: 12px;
+    color: var(--muted2);
+    line-height: 1.6;
+  }
+
+  /* ── FOOTER ──────────────────────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 52px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .footer-brand {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+  }
+
+  .footer-copy {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── ANIMATIONS ──────────────────────────────────────────── */
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
 </style>
 </head>
 <body>
 
-<header class="fade-up">
-  <div class="eyebrow">팀 정말로 · 데이터 저널리즘</div>
-  <h1>대통령마다<br><span>집값</span>은 얼마나 올랐나?</h1>
-  <div class="subtitle">전국 주택가격지수 · 기준: 2011.06 = 100 · 출처: 한국부동산원 실제 데이터</div>
-</header>
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="/">JEONGMALLO</a>
+  <ul class="nav-links">
+    <li><a href="#data">데이터</a></li>
+    <li><a href="#about">소개</a></li>
+    <li><a href="https://youtube.com" target="_blank">유튜브 ↗</a></li>
+  </ul>
+</nav>
 
-<main>
-
-  <!-- CARDS -->
-  <div class="fade-up d1">
-    <div class="section-label">대통령별 임기 중 주택가격 상승률</div>
-    <div class="cards" id="cards"></div>
-  </div>
-
-  <!-- BAR CHART -->
-  <div class="chart-box fade-up d2">
-    <div class="chart-box-header">
-      <div class="chart-title">임기 누적 상승률 비교</div>
-      <div class="chart-note">임기 시작월 → 종료월 지수 기준<br>기준시점 2011.06 = 100</div>
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-eyebrow">Data Journalism · 팩트 기반 미디어</p>
+  <h1 class="hero-title">
+    데이터로 확인하고<br>
+    <span class="line2">정말로</span>
+  </h1>
+  <p class="hero-desc">
+    정치인의 말, <strong>데이터로 검증</strong>합니다.<br>
+    우리가 궁금한 세상의 모든 질문을<br>
+    숫자와 그래프로 직접 확인합니다.
+  </p>
+  <div class="hero-stats">
+    <div class="stat-item">
+      <span class="stat-num">1</span>
+      <span class="stat-label">Published</span>
     </div>
-    <div class="chart-wrap"><canvas id="barChart"></canvas></div>
-  </div>
-
-  <!-- INDEX LINE CHART -->
-  <div class="chart-box fade-up d3">
-    <div class="chart-box-header">
-      <div class="chart-title">주택가격지수 추이 (2011.06 = 100)</div>
-      <div class="chart-note">임기 시작·종료 기준점 표시</div>
+    <div class="stat-item">
+      <span class="stat-num">324</span>
+      <span class="stat-label">Data Points</span>
     </div>
-    <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+    <div class="stat-item">
+      <span class="stat-num">100%</span>
+      <span class="stat-label">Public Data</span>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-track" id="ticker"></div>
+</div>
+
+<!-- CARDS SECTION -->
+<section class="section-wrap" id="data">
+  <div class="section-header">
+    <div>
+      <p class="section-eyebrow">데이터 분석 아카이브</p>
+      <h2 class="section-title">모든 분석 보기</h2>
+    </div>
+    <span class="section-count">1 published · 2 coming soon</span>
   </div>
 
-  <!-- ★ 신규: 월별 상승률 차트 (탭 전환) -->
-  <div class="chart-box fade-up d4">
-    <div class="chart-box-header">
-      <div>
-        <div class="chart-title">월별 주택가격 상승률 (전체 기간)</div>
-        <div class="tab-row" style="margin-top:12px;">
-          <button class="tab-btn active" onclick="switchTab('yoy',this)">전년동월대비 (YoY)</button>
-          <button class="tab-btn" onclick="switchTab('mom',this)">전월대비 (MoM)</button>
+  <div class="cards-grid" id="cardsGrid">
+
+    <!-- CARD 1: 집값 (라이브) -->
+    <a class="card" href="./01_president/index.html"
+       style="--card-color: #f0c040;"
+       data-delay="0">
+      <div class="card-thumb">
+        <div class="card-thumb-inner">
+          <!-- 막대 썸네일 -->
+          <div class="thumb-bars">
+            <div class="thumb-bar" style="height:60%;background:#4a9eff;"></div>
+            <div class="thumb-bar" style="height:45%;background:#7bed9f;"></div>
+            <div class="thumb-bar" style="height:25%;background:#f8a04a;"></div>
+            <div class="thumb-bar" style="height:18%;background:#a78bfa;"></div>
+            <div class="thumb-bar" style="height:40%;background:#da77f2;"></div>
+            <div class="thumb-bar" style="height:10%;background:#ff6b6b;margin-bottom:0;transform:scaleY(-1);transform-origin:bottom;"></div>
+          </div>
         </div>
       </div>
-      <div class="chart-note">1998.03 – 2025.03<br>출처: 한국부동산원 xlsx 원본</div>
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="card-no">No.01</span>
+          <div class="card-tags">
+            <span class="tag tag-gold">집값</span>
+            <span class="tag tag-blue">부동산</span>
+            <span class="tag tag-red">정치</span>
+          </div>
+        </div>
+        <h3 class="card-title">대통령마다 집값은<br>얼마나 올랐나?</h3>
+        <p class="card-desc">김대중부터 윤석열까지, 역대 6개 정부의 전국 아파트 매매가격 변동을 실제 데이터로 비교했습니다.</p>
+      </div>
+      <div class="card-footer">
+        <span class="card-date">2025.04</span>
+        <span class="card-arrow">분석 보기 →</span>
+      </div>
+    </a>
+
+    <!-- CARD 2: 야근 (커밍순) -->
+    <div class="card card-coming"
+         style="--card-color: #4499ff;"
+         data-delay="100">
+      <div class="card-thumb">
+        <div class="card-thumb-inner">
+          <div class="thumb-line-wrap">
+            <svg class="thumb-line-svg" viewBox="0 0 200 80" fill="none">
+              <polyline points="0,60 20,55 40,50 60,30 80,25 100,40 120,20 140,35 160,15 180,25 200,10"
+                stroke="#4499ff" stroke-width="2" fill="none" opacity="0.7"/>
+              <polyline points="0,70 20,65 40,68 60,55 80,60 100,50 120,58 140,45 160,52 180,40 200,45"
+                stroke="#7bed9f" stroke-width="2" fill="none" opacity="0.5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="card-no">No.02</span>
+          <div class="card-tags">
+            <span class="tag tag-blue">노동</span>
+            <span class="tag tag-green">OECD</span>
+          </div>
+        </div>
+        <h3 class="card-title">야근을 가장 많이<br>하는 나라는?</h3>
+        <p class="card-desc">OECD 국가별 연간 노동시간 데이터로 한국의 위치를 확인합니다.</p>
+      </div>
+      <div class="card-footer">
+        <span class="coming-badge">Coming Soon</span>
+        <span class="card-date">준비 중</span>
+      </div>
     </div>
-    <div class="chart-wrap tall"><canvas id="monthlyChart"></canvas></div>
-  </div>
 
-  <!-- RAW DATA TABLE -->
-  <div class="table-box fade-up d5">
-    <div class="section-label">원본 데이터</div>
-    <table>
-      <thead>
-        <tr>
-          <th>정부</th><th>구간</th><th>지수 (시작 → 종료)</th><th>상승률</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
+    <!-- CARD 3: 저출생 (커밍순) -->
+    <div class="card card-coming"
+         style="--card-color: #44ddaa;"
+         data-delay="200">
+      <div class="card-thumb">
+        <div class="card-thumb-inner">
+          <div class="thumb-dots">
+            <div class="thumb-dot" style="background:#44ddaa;height:28px;"></div>
+            <div class="thumb-dot" style="background:#44ddaa;height:22px;opacity:0.7;"></div>
+            <div class="thumb-dot" style="background:#f0c040;height:32px;"></div>
+            <div class="thumb-dot" style="background:#ff5566;height:18px;opacity:0.6;"></div>
+            <div class="thumb-dot" style="background:#44ddaa;height:26px;opacity:0.8;"></div>
+            <div class="thumb-dot" style="background:#f0c040;height:20px;opacity:0.7;"></div>
+            <div class="thumb-dot" style="background:#ff5566;height:24px;"></div>
+            <div class="thumb-dot" style="background:#44ddaa;height:16px;opacity:0.5;"></div>
+            <div class="thumb-dot" style="background:#f0c040;height:30px;opacity:0.9;"></div>
+            <div class="thumb-dot" style="background:#ff5566;height:22px;opacity:0.7;"></div>
+            <div class="thumb-dot" style="background:#44ddaa;height:18px;"></div>
+            <div class="thumb-dot" style="background:#f0c040;height:26px;opacity:0.8;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="card-no">No.03</span>
+          <div class="card-tags">
+            <span class="tag tag-green">저출생</span>
+            <span class="tag tag-gold">예산</span>
+            <span class="tag tag-red">팩트체크</span>
+          </div>
+        </div>
+        <h3 class="card-title">"수백조 썼다"는 말,<br>사실인가?</h3>
+        <p class="card-desc">저출생 대책 예산의 실제 규모와 집행 현황을 공공데이터로 검증합니다.</p>
+      </div>
+      <div class="card-footer">
+        <span class="coming-badge">Coming Soon</span>
+        <span class="card-date">준비 중</span>
+      </div>
+    </div>
 
-  <!-- INSIGHT -->
-  <div class="insight-box fade-up d6">
-    <div class="insight-icon">🔍</div>
-    <div>
-      <div class="insight-label">팩트 체크 포인트</div>
-      <div class="insight-text">
-        한국부동산원 주택가격지수 기준, 임기 중 상승률이 가장 높은 정부는 <strong>김대중 (+40.79%)</strong>,
-        다음은 <strong>노무현 (+32.22%)</strong>, <strong>문재인 (+29.56%)</strong> 순입니다.
-        윤석열 정부는 <strong>-11.78%</strong>로 역대 유일한 마이너스를 기록하였습니다.
-        월별 전년동월대비 그래프에서 보이듯, <strong>2021년 10월 +16.18%</strong>가 역대 최고 상승률이며
-        <strong>2023년 4–5월 -13.6%대</strong>가 최대 하락 구간입니다.
-        단, 집값은 대통령 정책 외에도 <strong>금리·글로벌 경기·공급량</strong> 등 복합 요인이 작용합니다.
+  </div>
+</section>
+
+<!-- ABOUT STRIP -->
+<section class="about-strip" id="about">
+  <div>
+    <p class="about-label">팀 정말로란</p>
+    <h2 class="about-title">데이터가 말하게<br>우리는 전달합니다</h2>
+    <p class="about-body">
+      정치인의 발언, 정부의 통계, 미디어의 주장 —<br>
+      <strong>팀 정말로</strong>는 모든 주장을 공공데이터와 데이터 분석으로 검증합니다.<br><br>
+      편향 없이, 과장 없이.<br>
+      <strong>숫자가 보여주는 것만 전달합니다.</strong>
+    </p>
+  </div>
+  <div class="about-principles">
+    <div class="principle">
+      <div class="principle-icon">📊</div>
+      <div class="principle-text">
+        <strong>공공데이터 기반</strong>
+        <span>통계청, 한국부동산원, OECD 등 검증된 공식 데이터만 사용합니다.</span>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-icon">⚖️</div>
+      <div class="principle-text">
+        <strong>정치적 중립</strong>
+        <span>여당도 야당도 같은 기준으로 분석합니다. 데이터만이 판단 기준입니다.</span>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-icon">🔓</div>
+      <div class="principle-text">
+        <strong>분석 코드 공개</strong>
+        <span>모든 분석 코드와 원본 데이터를 공개해 누구나 검증할 수 있습니다.</span>
       </div>
     </div>
   </div>
+</section>
 
-</main>
-
+<!-- FOOTER -->
 <footer>
-  <div class="footer-source">
-    출처: 한국부동산원 「전국주택가격동향조사」 규모별 매매가격지수 · 기준시점 2011.06 = 100<br>
-    공공데이터포털 data.go.kr · 팀 정말로 자체 분석
-  </div>
-  <div class="footer-brand">팀 정말로</div>
+  <span class="footer-brand">팀 정말로</span>
+  <span class="footer-copy">데이터로 확인하고, 팩트로 말합니다 · © 2025</span>
 </footer>
 
 <script>
-// ── 대통령 데이터 ─────────────────────────────────────────────
-const presidents = [
-  {name:'김대중',term:'1998.03–2003.02',start:'1998.03',end:'2003.02',idxStart:48.3,  idxEnd:68.0,   rate:40.7867, color:'#4a9eff'},
-  {name:'노무현',term:'2003.03–2008.02',start:'2003.03',end:'2008.02',idxStart:68.6,  idxEnd:90.7,   rate:32.2157, color:'#7bed9f'},
-  {name:'이명박',term:'2008.03–2013.02',start:'2008.03',end:'2013.02',idxStart:91.0,  idxEnd:101.852,rate:11.9254, color:'#f8a04a'},
-  {name:'박근혜',term:'2013.03–2017.03',start:'2013.03',end:'2017.03',idxStart:101.648,idxEnd:110.351,rate:8.5619,  color:'#a78bfa'},
-  {name:'문재인',term:'2017.05–2022.05',start:'2017.05',end:'2022.05',idxStart:110.623,idxEnd:143.327,rate:29.5636, color:'#da77f2'},
-  {name:'윤석열',term:'2022.06–2025.03',start:'2022.06',end:'2025.03',idxStart:143.123,idxEnd:126.261,rate:-11.7815,color:'#ff6b6b'},
+// ── TICKER ────────────────────────────────────────────────────
+const tickerItems = [
+  { label: '김대중 집값 상승률', val: '+40.79%' },
+  { label: '노무현 집값 상승률', val: '+32.22%' },
+  { label: '이명박 집값 상승률', val: '+11.93%' },
+  { label: '박근혜 집값 상승률', val: '+8.56%' },
+  { label: '문재인 집값 상승률', val: '+29.56%' },
+  { label: '윤석열 집값 상승률', val: '-11.78%' },
+  { label: '2021.10 역대최고 전년동월대비', val: '+16.18%' },
+  { label: '2023.04 역대최저 전년동월대비', val: '-13.64%' },
+  { label: '기준시점 2011.06', val: '= 100' },
+  { label: '출처', val: '한국부동산원' },
 ];
 
-// ── 월별 실제 데이터 (xlsx 원본) ──────────────────────────────
-const monthlyData = [{"date":"1998.03","idx":48.3,"mom":null,"yoy":null},{"date":"1998.04","idx":46.7,"mom":-3.3126,"yoy":null},{"date":"1998.05","idx":45.3,"mom":-2.9979,"yoy":null},{"date":"1998.06","idx":44.7,"mom":-1.3245,"yoy":null},{"date":"1998.07","idx":44.7,"mom":0.0,"yoy":null},{"date":"1998.08","idx":44.9,"mom":0.4474,"yoy":null},{"date":"1998.09","idx":44.7,"mom":-0.4454,"yoy":null},{"date":"1998.1","idx":44.4,"mom":-0.6711,"yoy":null},{"date":"1998.11","idx":44.2,"mom":-0.4505,"yoy":null},{"date":"1998.12","idx":44.7,"mom":1.1312,"yoy":null},{"date":"1999.01","idx":45.8,"mom":2.4609,"yoy":null},{"date":"1999.02","idx":46.2,"mom":0.8734,"yoy":null},{"date":"1999.03","idx":46.6,"mom":0.8658,"yoy":-3.5197},{"date":"1999.04","idx":46.8,"mom":0.4292,"yoy":0.2141},{"date":"1999.05","idx":47.1,"mom":0.641,"yoy":3.9735},{"date":"1999.06","idx":47.2,"mom":0.2123,"yoy":5.5928},{"date":"1999.07","idx":47.6,"mom":0.8475,"yoy":6.4877},{"date":"1999.08","idx":48.1,"mom":1.0504,"yoy":7.1269},{"date":"1999.09","idx":48.6,"mom":1.0395,"yoy":8.7248},{"date":"1999.1","idx":48.8,"mom":0.4115,"yoy":9.9099},{"date":"1999.11","idx":48.7,"mom":-0.2049,"yoy":10.181},{"date":"1999.12","idx":48.6,"mom":-0.2053,"yoy":8.7248},{"date":"2000.01","idx":48.9,"mom":0.6173,"yoy":6.7686},{"date":"2000.02","idx":49.1,"mom":0.409,"yoy":6.2771},{"date":"2000.03","idx":49.2,"mom":0.2037,"yoy":5.5794},{"date":"2000.04","idx":49.3,"mom":0.2033,"yoy":5.3419},{"date":"2000.05","idx":49.2,"mom":-0.2028,"yoy":4.4586},{"date":"2000.06","idx":49.1,"mom":-0.2033,"yoy":4.0254},{"date":"2000.07","idx":49.1,"mom":0.0,"yoy":3.1513},{"date":"2000.08","idx":49.2,"mom":0.2037,"yoy":2.2869},{"date":"2000.09","idx":49.3,"mom":0.2033,"yoy":1.4403},{"date":"2000.1","idx":49.3,"mom":0.0,"yoy":1.0246},{"date":"2000.11","idx":49.2,"mom":-0.2028,"yoy":1.0267},{"date":"2000.12","idx":48.7,"mom":-1.0163,"yoy":0.2058},{"date":"2001.01","idx":48.8,"mom":0.2053,"yoy":-0.2045},{"date":"2001.02","idx":49.0,"mom":0.4098,"yoy":-0.2037},{"date":"2001.03","idx":49.4,"mom":0.8163,"yoy":0.4065},{"date":"2001.04","idx":49.8,"mom":0.8097,"yoy":1.0142},{"date":"2001.05","idx":50.3,"mom":1.004,"yoy":2.2358},{"date":"2001.06","idx":50.8,"mom":0.994,"yoy":3.4623},{"date":"2001.07","idx":51.8,"mom":1.9685,"yoy":5.499},{"date":"2001.08","idx":52.9,"mom":2.1236,"yoy":7.5203},{"date":"2001.09","idx":54.0,"mom":2.0794,"yoy":9.5335},{"date":"2001.1","idx":54.3,"mom":0.5556,"yoy":10.142},{"date":"2001.11","idx":54.6,"mom":0.5525,"yoy":10.9756},{"date":"2001.12","idx":55.3,"mom":1.2821,"yoy":13.5524},{"date":"2002.01","idx":57.5,"mom":3.9783,"yoy":17.8279},{"date":"2002.02","idx":59.6,"mom":3.6522,"yoy":21.6327},{"date":"2002.03","idx":61.4,"mom":3.0201,"yoy":24.2915},{"date":"2002.04","idx":62.0,"mom":0.9772,"yoy":24.498},{"date":"2002.05","idx":62.3,"mom":0.4839,"yoy":23.8569},{"date":"2002.06","idx":62.6,"mom":0.4815,"yoy":23.2283},{"date":"2002.07","idx":63.4,"mom":1.278,"yoy":22.3938},{"date":"2002.08","idx":64.9,"mom":2.3659,"yoy":22.6843},{"date":"2002.09","idx":67.1,"mom":3.3898,"yoy":24.2593},{"date":"2002.1","idx":67.6,"mom":0.7452,"yoy":24.4936},{"date":"2002.11","idx":67.4,"mom":-0.2959,"yoy":23.4432},{"date":"2002.12","idx":67.6,"mom":0.2967,"yoy":22.2423},{"date":"2003.01","idx":67.7,"mom":0.1479,"yoy":17.7391},{"date":"2003.02","idx":68.0,"mom":0.4431,"yoy":14.094},{"date":"2003.03","idx":68.6,"mom":0.8824,"yoy":11.7264},{"date":"2003.04","idx":69.1,"mom":0.7289,"yoy":11.4516},{"date":"2003.05","idx":70.5,"mom":2.026,"yoy":13.1621},{"date":"2003.06","idx":71.4,"mom":1.2766,"yoy":14.0575},{"date":"2003.07","idx":71.7,"mom":0.4202,"yoy":13.0915},{"date":"2003.08","idx":72.1,"mom":0.5579,"yoy":11.094},{"date":"2003.09","idx":73.2,"mom":1.5257,"yoy":9.0909},{"date":"2003.1","idx":74.5,"mom":1.776,"yoy":10.2071},{"date":"2003.11","idx":74.5,"mom":0.0,"yoy":10.5341},{"date":"2003.12","idx":74.2,"mom":-0.4027,"yoy":9.7633},{"date":"2004.01","idx":74.1,"mom":-0.1348,"yoy":9.4535},{"date":"2004.02","idx":74.4,"mom":0.4049,"yoy":9.4118},{"date":"2004.03","idx":74.8,"mom":0.5376,"yoy":9.0379},{"date":"2004.04","idx":75.0,"mom":0.2674,"yoy":8.5384},{"date":"2004.05","idx":75.1,"mom":0.1333,"yoy":6.5248},{"date":"2004.06","idx":75.1,"mom":0.0,"yoy":5.1821},{"date":"2004.07","idx":75.0,"mom":-0.1332,"yoy":4.6025},{"date":"2004.08","idx":74.8,"mom":-0.2667,"yoy":3.7448},{"date":"2004.09","idx":74.7,"mom":-0.1337,"yoy":2.0492},{"date":"2004.1","idx":74.7,"mom":0.0,"yoy":0.2685},{"date":"2004.11","idx":74.4,"mom":-0.4016,"yoy":-0.1342},{"date":"2004.12","idx":74.1,"mom":-0.4032,"yoy":-0.1348},{"date":"2005.01","idx":73.8,"mom":-0.4049,"yoy":-0.4049},{"date":"2005.02","idx":74.1,"mom":0.4065,"yoy":-0.4032},{"date":"2005.03","idx":74.5,"mom":0.5398,"yoy":-0.4011},{"date":"2005.04","idx":75.1,"mom":0.8054,"yoy":0.1333},{"date":"2005.05","idx":75.6,"mom":0.6658,"yoy":0.6658},{"date":"2005.06","idx":76.5,"mom":1.1905,"yoy":1.8642},{"date":"2005.07","idx":77.2,"mom":0.915,"yoy":2.9333},{"date":"2005.08","idx":77.6,"mom":0.5181,"yoy":3.7433},{"date":"2005.09","idx":77.8,"mom":0.2577,"yoy":4.1499},{"date":"2005.1","idx":77.9,"mom":0.1285,"yoy":4.2838},{"date":"2005.11","idx":77.9,"mom":0.0,"yoy":4.7043},{"date":"2005.12","idx":78.1,"mom":0.2567,"yoy":5.3981},{"date":"2006.01","idx":78.4,"mom":0.3841,"yoy":6.2331},{"date":"2006.02","idx":78.9,"mom":0.6378,"yoy":6.4777},{"date":"2006.03","idx":79.5,"mom":0.7605,"yoy":6.7114},{"date":"2006.04","idx":80.4,"mom":1.1321,"yoy":7.0573},{"date":"2006.05","idx":81.5,"mom":1.3682,"yoy":7.8042},{"date":"2006.06","idx":82.0,"mom":0.6135,"yoy":7.1895},{"date":"2006.07","idx":82.2,"mom":0.2439,"yoy":6.4767},{"date":"2006.08","idx":82.4,"mom":0.2433,"yoy":6.1856},{"date":"2006.09","idx":82.8,"mom":0.4854,"yoy":6.4267},{"date":"2006.1","idx":84.1,"mom":1.57,"yoy":7.9589},{"date":"2006.11","idx":87.3,"mom":3.805,"yoy":12.0668},{"date":"2006.12","idx":89.2,"mom":2.1764,"yoy":14.2125},{"date":"2007.01","idx":90.0,"mom":0.8969,"yoy":14.7959},{"date":"2007.02","idx":90.3,"mom":0.3333,"yoy":14.4487},{"date":"2007.03","idx":90.3,"mom":0.0,"yoy":13.5849},{"date":"2007.04","idx":90.3,"mom":0.0,"yoy":12.3134},{"date":"2007.05","idx":90.1,"mom":-0.2215,"yoy":10.5521},{"date":"2007.06","idx":90.1,"mom":0.0,"yoy":9.878},{"date":"2007.07","idx":90.2,"mom":0.111,"yoy":9.7324},{"date":"2007.08","idx":90.3,"mom":0.1109,"yoy":9.5874},{"date":"2007.09","idx":90.4,"mom":0.1107,"yoy":9.1787},{"date":"2007.1","idx":90.5,"mom":0.1106,"yoy":7.61},{"date":"2007.11","idx":90.5,"mom":0.0,"yoy":3.6655},{"date":"2007.12","idx":90.5,"mom":0.0,"yoy":1.4574},{"date":"2008.01","idx":90.6,"mom":0.1105,"yoy":0.6667},{"date":"2008.02","idx":90.7,"mom":0.1104,"yoy":0.443},{"date":"2008.03","idx":91.0,"mom":0.3308,"yoy":0.7752},{"date":"2008.04","idx":91.5,"mom":0.5495,"yoy":1.3289},{"date":"2008.05","idx":91.9,"mom":0.4372,"yoy":1.9978},{"date":"2008.06","idx":92.2,"mom":0.3264,"yoy":2.3307},{"date":"2008.07","idx":92.4,"mom":0.2169,"yoy":2.439},{"date":"2008.08","idx":92.5,"mom":0.1082,"yoy":2.4363},{"date":"2008.09","idx":92.6,"mom":0.1081,"yoy":2.4336},{"date":"2008.1","idx":92.5,"mom":-0.108,"yoy":2.2099},{"date":"2008.11","idx":92.0,"mom":-0.5405,"yoy":1.6575},{"date":"2008.12","idx":91.2,"mom":-0.8696,"yoy":0.7735},{"date":"2009.01","idx":90.5,"mom":-0.7675,"yoy":-0.1104},{"date":"2009.02","idx":90.3,"mom":-0.221,"yoy":-0.441},{"date":"2009.03","idx":90.0,"mom":-0.3322,"yoy":-1.0989},{"date":"2009.04","idx":90.1,"mom":0.1111,"yoy":-1.5301},{"date":"2009.05","idx":90.2,"mom":0.111,"yoy":-1.8498},{"date":"2009.06","idx":90.4,"mom":0.2217,"yoy":-1.9523},{"date":"2009.07","idx":90.7,"mom":0.3319,"yoy":-1.8398},{"date":"2009.08","idx":91.0,"mom":0.3308,"yoy":-1.6216},{"date":"2009.09","idx":91.7,"mom":0.7692,"yoy":-0.9719},{"date":"2009.1","idx":92.0,"mom":0.3272,"yoy":-0.5405},{"date":"2009.11","idx":92.3,"mom":0.3261,"yoy":0.3261},{"date":"2009.12","idx":92.4,"mom":0.1083,"yoy":1.3158},{"date":"2010.01","idx":92.6,"mom":0.2165,"yoy":2.3204},{"date":"2010.02","idx":92.9,"mom":0.324,"yoy":2.8793},{"date":"2010.03","idx":93.1,"mom":0.2153,"yoy":3.4444},{"date":"2010.04","idx":93.3,"mom":0.2148,"yoy":3.5516},{"date":"2010.05","idx":93.4,"mom":0.1072,"yoy":3.5477},{"date":"2010.06","idx":93.3,"mom":-0.1071,"yoy":3.208},{"date":"2010.07","idx":93.2,"mom":-0.1072,"yoy":2.7563},{"date":"2010.08","idx":93.2,"mom":0.0,"yoy":2.4176},{"date":"2010.09","idx":93.3,"mom":0.1073,"yoy":1.7448},{"date":"2010.1","idx":93.6,"mom":0.3215,"yoy":1.7391},{"date":"2010.11","idx":94.0,"mom":0.4274,"yoy":1.8418},{"date":"2010.12","idx":94.6,"mom":0.6383,"yoy":2.381},{"date":"2011.01","idx":95.2,"mom":0.6342,"yoy":2.8078},{"date":"2011.02","idx":96.1,"mom":0.9454,"yoy":3.4446},{"date":"2011.03","idx":97.2,"mom":1.1446,"yoy":4.4039},{"date":"2011.04","idx":98.4,"mom":1.2346,"yoy":5.4662},{"date":"2011.05","idx":99.3,"mom":0.9146,"yoy":6.3169},{"date":"2011.06","idx":100.0,"mom":0.7049,"yoy":7.1811},{"date":"2011.07","idx":100.5,"mom":0.5,"yoy":7.8326},{"date":"2011.08","idx":101.2,"mom":0.6965,"yoy":8.5837},{"date":"2011.09","idx":101.8,"mom":0.5929,"yoy":9.1104},{"date":"2011.1","idx":102.3,"mom":0.4912,"yoy":9.2949},{"date":"2011.11","idx":102.8,"mom":0.4888,"yoy":9.3617},{"date":"2011.12","idx":103.0,"mom":0.1946,"yoy":8.8795},{"date":"2012.01","idx":103.2,"mom":0.1942,"yoy":8.4034},{"date":"2012.02","idx":103.4,"mom":0.1938,"yoy":7.5963},{"date":"2012.03","idx":103.5,"mom":0.0967,"yoy":6.4815},{"date":"2012.04","idx":103.6,"mom":0.0966,"yoy":5.2846},{"date":"2012.05","idx":103.6,"mom":0.0,"yoy":4.3303},{"date":"2012.07","idx":103.4,"mom":-0.1931,"yoy":3.4},{"date":"2012.08","idx":103.2,"mom":-0.1934,"yoy":2.6866},{"date":"2012.09","idx":103.1,"mom":-0.0969,"yoy":1.8775},{"date":"2012.1","idx":102.8,"mom":-0.291,"yoy":0.9823},{"date":"2012.11","idx":102.7,"mom":-0.0973,"yoy":0.391},{"date":"2012.12","idx":102.6,"mom":-0.0974,"yoy":-0.1946},{"date":"2013.01","idx":102.192,"mom":-0.3976,"yoy":-0.7844},{"date":"2013.02","idx":101.8521,"mom":-0.3327,"yoy":-1.3061},{"date":"2013.03","idx":101.6481,"mom":-0.2003,"yoy":-1.6943},{"date":"2013.04","idx":101.5801,"mom":-0.0669,"yoy":-1.855},{"date":"2013.05","idx":101.7841,"mom":0.2008,"yoy":-1.7528},{"date":"2013.06","idx":101.7161,"mom":-0.0668,"yoy":-1.8184},{"date":"2013.07","idx":101.5801,"mom":-0.1337,"yoy":-1.76},{"date":"2013.08","idx":101.3761,"mom":-0.2008,"yoy":-1.7673},{"date":"2013.09","idx":101.3761,"mom":0.0,"yoy":-1.672},{"date":"2013.1","idx":101.7841,"mom":0.4024,"yoy":-0.9882},{"date":"2013.11","idx":102.0561,"mom":0.2672,"yoy":-0.627},{"date":"2013.12","idx":102.26,"mom":0.1999,"yoy":-0.3313},{"date":"2014.01","idx":102.6,"mom":0.3324,"yoy":0.3992},{"date":"2014.02","idx":102.94,"mom":0.3313,"yoy":1.0681},{"date":"2014.03","idx":103.2119,"mom":0.2642,"yoy":1.5385},{"date":"2014.04","idx":103.2799,"mom":0.0659,"yoy":1.6734},{"date":"2014.05","idx":103.3479,"mom":0.0658,"yoy":1.5364},{"date":"2014.06","idx":103.2799,"mom":-0.0658,"yoy":1.5374},{"date":"2014.07","idx":103.4159,"mom":0.1317,"yoy":1.8072},{"date":"2014.08","idx":103.5519,"mom":0.1315,"yoy":2.1462},{"date":"2014.09","idx":103.8918,"mom":0.3283,"yoy":2.4816},{"date":"2014.1","idx":104.2998,"mom":0.3927,"yoy":2.4716},{"date":"2014.11","idx":104.5718,"mom":0.2608,"yoy":2.465},{"date":"2014.12","idx":104.7757,"mom":0.1951,"yoy":2.4601},{"date":"2015.01","idx":104.9797,"mom":0.1947,"yoy":2.3194},{"date":"2015.02","idx":105.2517,"mom":0.2591,"yoy":2.2457},{"date":"2015.03","idx":105.6596,"mom":0.3876,"yoy":2.3715},{"date":"2015.04","idx":106.2716,"mom":0.5792,"yoy":2.8966},{"date":"2015.05","idx":106.7475,"mom":0.4479,"yoy":3.2895},{"date":"2015.06","idx":107.2235,"mom":0.4459,"yoy":3.8183},{"date":"2015.07","idx":107.5634,"mom":0.3171,"yoy":4.0105},{"date":"2015.08","idx":107.9714,"mom":0.3793,"yoy":4.2679},{"date":"2015.09","idx":108.3793,"mom":0.3778,"yoy":4.3194},{"date":"2015.1","idx":108.7873,"mom":0.3764,"yoy":4.3025},{"date":"2015.11","idx":109.1952,"mom":0.375,"yoy":4.4213},{"date":"2015.12","idx":109.3992,"mom":0.1868,"yoy":4.4127},{"date":"2016.01","idx":109.3992,"mom":0.0,"yoy":4.2098},{"date":"2016.02","idx":109.3312,"mom":-0.0622,"yoy":3.876},{"date":"2016.03","idx":109.3312,"mom":0.0,"yoy":3.4749},{"date":"2016.04","idx":109.2632,"mom":-0.0622,"yoy":2.8151},{"date":"2016.05","idx":109.3312,"mom":0.0622,"yoy":2.4204},{"date":"2016.06","idx":109.3312,"mom":0.0,"yoy":1.9658},{"date":"2016.07","idx":109.4672,"mom":0.1244,"yoy":1.7699},{"date":"2016.08","idx":109.5352,"mom":0.0621,"yoy":1.4484},{"date":"2016.09","idx":109.6712,"mom":0.1241,"yoy":1.192},{"date":"2016.1","idx":110.0111,"mom":0.31,"yoy":1.125},{"date":"2016.11","idx":110.2151,"mom":0.1854,"yoy":0.934},{"date":"2016.12","idx":110.3511,"mom":0.1234,"yoy":0.8701},{"date":"2017.01","idx":110.2831,"mom":-0.0616,"yoy":0.808},{"date":"2017.02","idx":110.2831,"mom":0.0,"yoy":0.8706},{"date":"2017.03","idx":110.3511,"mom":0.0617,"yoy":0.9328},{"date":"2017.04","idx":110.4191,"mom":0.0616,"yoy":1.0579},{"date":"2017.05","idx":110.6231,"mom":0.1847,"yoy":1.1816},{"date":"2017.06","idx":110.827,"mom":0.1844,"yoy":1.3682},{"date":"2017.07","idx":110.963,"mom":0.1227,"yoy":1.3665},{"date":"2017.08","idx":111.303,"mom":0.3064,"yoy":1.6139},{"date":"2017.09","idx":111.439,"mom":0.1222,"yoy":1.6119},{"date":"2017.1","idx":111.507,"mom":0.061,"yoy":1.3597},{"date":"2017.11","idx":111.6429,"mom":0.122,"yoy":1.2955},{"date":"2017.12","idx":111.9149,"mom":0.2436,"yoy":1.4171},{"date":"2018.01","idx":112.1869,"mom":0.243,"yoy":1.7263},{"date":"2018.02","idx":112.5948,"mom":0.3636,"yoy":2.0962},{"date":"2018.03","idx":112.8668,"mom":0.2415,"yoy":2.2797},{"date":"2018.04","idx":113.0708,"mom":0.1807,"yoy":2.4015},{"date":"2018.05","idx":113.0028,"mom":-0.0601,"yoy":2.1512},{"date":"2018.06","idx":112.9348,"mom":-0.0602,"yoy":1.9018},{"date":"2018.07","idx":112.8668,"mom":-0.0602,"yoy":1.7157},{"date":"2018.08","idx":112.9348,"mom":0.0602,"yoy":1.4661},{"date":"2018.09","idx":113.4107,"mom":0.4214,"yoy":1.7694},{"date":"2018.1","idx":113.6147,"mom":0.1799,"yoy":1.8902},{"date":"2018.11","idx":113.7507,"mom":0.1197,"yoy":1.8879},{"date":"2018.12","idx":113.6827,"mom":-0.0598,"yoy":1.5796},{"date":"2019.01","idx":113.4787,"mom":-0.1794,"yoy":1.1515},{"date":"2019.02","idx":113.2068,"mom":-0.2397,"yoy":0.5435},{"date":"2019.03","idx":113.0028,"mom":-0.1802,"yoy":0.1205},{"date":"2019.04","idx":112.5268,"mom":-0.4212,"yoy":-0.4811},{"date":"2019.05","idx":112.2549,"mom":-0.2417,"yoy":-0.6619},{"date":"2019.06","idx":111.9149,"mom":-0.3028,"yoy":-0.9031},{"date":"2019.07","idx":111.8469,"mom":-0.0608,"yoy":-0.9036},{"date":"2019.08","idx":111.7789,"mom":-0.0608,"yoy":-1.0235},{"date":"2019.09","idx":111.8469,"mom":0.0608,"yoy":-1.3789},{"date":"2019.1","idx":112.1189,"mom":0.2432,"yoy":-1.3166},{"date":"2019.11","idx":112.5268,"mom":0.3639,"yoy":-1.0759},{"date":"2019.12","idx":113.4107,"mom":0.7855,"yoy":-0.2392},{"date":"2020.01","idx":114.0907,"mom":0.5995,"yoy":0.5392},{"date":"2020.02","idx":114.9066,"mom":0.7151,"yoy":1.5015},{"date":"2020.03","idx":116.4704,"mom":1.3609,"yoy":3.0686},{"date":"2020.04","idx":117.2183,"mom":0.6421,"yoy":4.1692},{"date":"2020.05","idx":117.6262,"mom":0.348,"yoy":4.785},{"date":"2020.06","idx":118.5101,"mom":0.7514,"yoy":5.8931},{"date":"2020.07","idx":120.006,"mom":1.2622,"yoy":7.2948},{"date":"2020.08","idx":121.0258,"mom":0.8499,"yoy":8.2725},{"date":"2020.09","idx":122.0457,"mom":0.8427,"yoy":9.1185},{"date":"2020.1","idx":122.7256,"mom":0.5571,"yoy":9.4603},{"date":"2020.11","idx":123.8815,"mom":0.9418,"yoy":10.0906},{"date":"2020.12","idx":125.8533,"mom":1.5917,"yoy":10.9712},{"date":"2021.01","idx":127.5531,"mom":1.3506,"yoy":11.7998},{"date":"2021.02","idx":129.5249,"mom":1.5458,"yoy":12.7219},{"date":"2021.03","idx":131.0887,"mom":1.2073,"yoy":12.5511},{"date":"2021.04","idx":132.5845,"mom":1.1411,"yoy":13.109},{"date":"2021.05","idx":133.8083,"mom":0.9231,"yoy":13.7572},{"date":"2021.06","idx":135.9841,"mom":1.626,"yoy":14.7447},{"date":"2021.07","idx":137.5479,"mom":1.15,"yoy":14.6176},{"date":"2021.08","idx":139.3157,"mom":1.2852,"yoy":15.1124},{"date":"2021.09","idx":140.9475,"mom":1.1713,"yoy":15.4875},{"date":"2021.1","idx":142.5793,"mom":1.1577,"yoy":16.1773},{"date":"2021.11","idx":143.5992,"mom":0.7153,"yoy":15.9166},{"date":"2021.12","idx":143.9392,"mom":0.2367,"yoy":14.3706},{"date":"2022.01","idx":143.9392,"mom":0.0,"yoy":12.8465},{"date":"2022.02","idx":143.8712,"mom":-0.0472,"yoy":11.0761},{"date":"2022.03","idx":143.6672,"mom":-0.1418,"yoy":9.5954},{"date":"2022.04","idx":143.5312,"mom":-0.0947,"yoy":8.2564},{"date":"2022.05","idx":143.3272,"mom":-0.1421,"yoy":7.1138},{"date":"2022.06","idx":143.1233,"mom":-0.1423,"yoy":5.25},{"date":"2022.07","idx":142.7833,"mom":-0.2375,"yoy":3.8062},{"date":"2022.08","idx":141.8994,"mom":-0.619,"yoy":1.8546},{"date":"2022.09","idx":140.6755,"mom":-0.8625,"yoy":-0.193},{"date":"2022.1","idx":138.8398,"mom":-1.305,"yoy":-2.6228},{"date":"2022.11","idx":135.8481,"mom":-2.1548,"yoy":-5.3977},{"date":"2022.12","idx":131.6326,"mom":-3.1031,"yoy":-8.5498},{"date":"2023.01","idx":128.505,"mom":-2.376,"yoy":-10.7227},{"date":"2023.02","idx":126.1932,"mom":-1.7989,"yoy":-12.2873},{"date":"2023.03","idx":124.7654,"mom":-1.1315,"yoy":-13.1566},{"date":"2023.04","idx":123.9495,"mom":-0.654,"yoy":-13.6428},{"date":"2023.05","idx":123.8135,"mom":-0.1097,"yoy":-13.6148},{"date":"2023.06","idx":123.9495,"mom":0.1098,"yoy":-13.3967},{"date":"2023.07","idx":124.2215,"mom":0.2194,"yoy":-13.0},{"date":"2023.08","idx":124.6974,"mom":0.3831,"yoy":-12.1227},{"date":"2023.09","idx":125.2414,"mom":0.4362,"yoy":-10.9715},{"date":"2023.1","idx":125.7173,"mom":0.38,"yoy":-9.4515},{"date":"2023.11","idx":125.8533,"mom":0.1082,"yoy":-7.3574},{"date":"2023.12","idx":125.7853,"mom":-0.054,"yoy":-4.4421},{"date":"2024.01","idx":125.5813,"mom":-0.1622,"yoy":-2.2751},{"date":"2024.02","idx":125.3093,"mom":-0.2166,"yoy":-0.7004},{"date":"2024.03","idx":125.0374,"mom":-0.217,"yoy":0.218},{"date":"2024.04","idx":124.9694,"mom":-0.0544,"yoy":0.8228},{"date":"2024.05","idx":124.9694,"mom":0.0,"yoy":0.9336},{"date":"2024.06","idx":124.9694,"mom":0.0,"yoy":0.8228},{"date":"2024.07","idx":125.3773,"mom":0.3264,"yoy":0.9305},{"date":"2024.08","idx":125.7853,"mom":0.3254,"yoy":0.8724},{"date":"2024.09","idx":126.2612,"mom":0.3784,"yoy":0.8143},{"date":"2024.1","idx":126.4652,"mom":0.1616,"yoy":0.5949},{"date":"2024.11","idx":126.4652,"mom":0.0,"yoy":0.4862},{"date":"2024.12","idx":126.3972,"mom":-0.0538,"yoy":0.4865},{"date":"2025.01","idx":126.2612,"mom":-0.1076,"yoy":0.5414},{"date":"2025.02","idx":126.1932,"mom":-0.0539,"yoy":0.7054},{"date":"2025.03","idx":126.2612,"mom":0.0539,"yoy":0.9788}];
+const track = document.getElementById('ticker');
+const makeItems = () => tickerItems.map(t =>
+  `<span class="ticker-item"><span>${t.val}</span>${t.label}</span>`
+).join('');
+// 두 번 반복해서 끊김 없는 루프
+track.innerHTML = makeItems() + makeItems();
 
-// 대통령 구간 경계 인덱스 계산
-function getPresidentBoundaries(labels) {
-  const boundaries = [
-    {s:'1998.03',e:'2003.02',color:'#4a9eff',name:'김대중'},
-    {s:'2003.03',e:'2008.02',color:'#7bed9f',name:'노무현'},
-    {s:'2008.03',e:'2013.02',color:'#f8a04a',name:'이명박'},
-    {s:'2013.03',e:'2017.03',color:'#a78bfa',name:'박근혜'},
-    {s:'2017.05',e:'2022.05',color:'#da77f2',name:'문재인'},
-    {s:'2022.06',e:'2025.03',color:'#ff6b6b',name:'윤석열'},
-  ];
-  return boundaries.map(b => ({
-    ...b,
-    si: labels.indexOf(b.s),
-    ei: labels.indexOf(b.e),
-  }));
-}
+// ── CARD SCROLL ANIMATION ─────────────────────────────────────
+const cards = document.querySelectorAll('.card:not(.card-coming)');
+const comingCards = document.querySelectorAll('.card-coming');
 
-// 대통령 구간 배경 플러그인 (범용)
-function makeBgPlugin(getLabels) {
-  return {
-    id: 'bgRegions',
-    beforeDraw(chart) {
-      const {ctx, chartArea, scales} = chart;
-      if (!chartArea) return;
-      const labels = getLabels();
-      const bounds = getPresidentBoundaries(labels);
-      bounds.forEach(b => {
-        if (b.si < 0 || b.ei < 0) return;
-        const x1 = scales.x.getPixelForValue(b.si);
-        const x2 = scales.x.getPixelForValue(b.ei);
-        ctx.save();
-        ctx.fillStyle = b.color + '14';
-        ctx.fillRect(x1, chartArea.top, x2 - x1, chartArea.height);
-        ctx.fillStyle = b.color + '90';
-        ctx.font = '600 10px IBM Plex Mono';
-        ctx.fillText(b.name, x1 + 5, chartArea.top + 14);
-        ctx.restore();
-      });
-    }
-  };
-}
-
-const maxAbs = Math.max(...presidents.map(p => Math.abs(p.rate)));
-
-// ── CARDS ──────────────────────────────────────────────────────
-const cardsEl = document.getElementById('cards');
-presidents.forEach(p => {
-  const sign = p.rate >= 0 ? '+' : '';
-  const barW = Math.abs(p.rate) / maxAbs * 100;
-  const div = document.createElement('div');
-  div.className = 'card';
-  div.style.setProperty('--c', p.color);
-  div.innerHTML = `
-    <div class="card-name">${p.name}</div>
-    <div class="card-term">${p.term}</div>
-    <div class="card-pct">${sign}${p.rate.toFixed(2)}%</div>
-    <div class="card-label">임기 누적 변동률</div>
-    <div class="card-bar-bg"><div class="card-bar" data-w="${barW}"></div></div>`;
-  cardsEl.appendChild(div);
-});
-setTimeout(() => {
-  document.querySelectorAll('.card-bar').forEach(el => { el.style.width = el.dataset.w + '%'; });
-}, 300);
-
-// ── TABLE ──────────────────────────────────────────────────────
-const tbody = document.getElementById('tableBody');
-presidents.forEach(p => {
-  const sign = p.rate >= 0 ? '+' : '';
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td style="color:${p.color}">${p.name}정부</td>
-    <td>${p.start} → ${p.end}</td>
-    <td>${p.idxStart.toFixed(1)} → ${p.idxEnd.toFixed(1)}</td>
-    <td style="color:${p.color}">${sign}${p.rate.toFixed(4)}%</td>`;
-  tbody.appendChild(tr);
-});
-
-// ── BAR CHART ──────────────────────────────────────────────────
-new Chart(document.getElementById('barChart').getContext('2d'), {
-  type: 'bar',
-  data: {
-    labels: presidents.map(p => p.name),
-    datasets: [{
-      data: presidents.map(p => +p.rate.toFixed(2)),
-      backgroundColor: presidents.map(p => p.color + 'bb'),
-      borderColor: presidents.map(p => p.color),
-      borderWidth: 1, borderRadius: 3,
-    }]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: {display: false},
-      tooltip: {
-        backgroundColor:'#1e1e2e',titleColor:'#f0c040',bodyColor:'#e8e8f0',borderColor:'#2e2e3e',borderWidth:1,
-        callbacks: {label: ctx => ` 누적 ${ctx.raw > 0 ? '+' : ''}${ctx.raw}%`}
-      }
-    },
-    scales: {
-      x: {grid:{display:false}, ticks:{color:'#e8e8f0',font:{family:'Noto Serif KR',size:12,weight:'700'}}},
-      y: {
-        grid:{color:'#1e1e2e'},
-        ticks:{color:'#6b6b8a',font:{family:'IBM Plex Mono',size:10}, callback: v => `${v>0?'+':''}${v}%`},
-        afterDataLimits(s){s.min = Math.min(s.min,-15);}
-      }
-    }
-  }
-});
-
-// ── INDEX LINE CHART ───────────────────────────────────────────
-const indexPoints = [
-  {label:'1998.03',val:48.3,note:'김대중 시작'},{label:'2003.02',val:68.0,note:'김대중 종료'},
-  {label:'2003.03',val:68.6,note:'노무현 시작'},{label:'2008.02',val:90.7,note:'노무현 종료'},
-  {label:'2008.03',val:91.0,note:'이명박 시작'},{label:'2013.02',val:101.9,note:'이명박 종료'},
-  {label:'2013.03',val:101.6,note:'박근혜 시작'},{label:'2017.03',val:110.4,note:'박근혜 종료'},
-  {label:'2017.05',val:110.6,note:'문재인 시작'},{label:'2022.05',val:143.3,note:'문재인 종료'},
-  {label:'2022.06',val:143.1,note:'윤석열 시작'},{label:'2025.03',val:126.3,note:'윤석열 (현재)'},
-];
-const ptColors = ['#4a9eff','#4a9eff','#7bed9f','#7bed9f','#f8a04a','#f8a04a',
-  '#a78bfa','#a78bfa','#da77f2','#da77f2','#ff6b6b','#ff6b6b'];
-const xLabels12 = ['98.03','03.02','03.03','08.02','08.03','13.02','13.03','17.03','17.05','22.05','22.06','25.03'];
-
-const regionPlugin12 = {
-  id:'bgRegions12',
-  beforeDraw(chart){
-    const {ctx,chartArea,scales}=chart; if(!chartArea) return;
-    const regions=[
-      {s:0,e:1,c:'#4a9eff',n:'김대중'},{s:2,e:3,c:'#7bed9f',n:'노무현'},
-      {s:4,e:5,c:'#f8a04a',n:'이명박'},{s:6,e:7,c:'#a78bfa',n:'박근혜'},
-      {s:8,e:9,c:'#da77f2',n:'문재인'},{s:10,e:11,c:'#ff6b6b',n:'윤석열'},
-    ];
-    regions.forEach(r=>{
-      const x1=scales.x.getPixelForValue(r.s),x2=scales.x.getPixelForValue(r.e);
-      ctx.save();
-      ctx.fillStyle=r.c+'14'; ctx.fillRect(x1,chartArea.top,x2-x1,chartArea.height);
-      ctx.fillStyle=r.c+'90'; ctx.font='600 10px IBM Plex Mono';
-      ctx.fillText(r.n,x1+5,chartArea.top+14); ctx.restore();
-    });
-  }
-};
-
-new Chart(document.getElementById('lineChart').getContext('2d'), {
-  type:'line', plugins:[regionPlugin12],
-  data:{
-    labels: indexPoints.map((_,i)=>i),
-    datasets:[{
-      label:'주택가격지수',
-      data: indexPoints.map(d=>d.val),
-      borderColor:'#f0c040',backgroundColor:'rgba(240,192,64,.07)',
-      borderWidth:2.5,pointRadius:6,
-      pointBackgroundColor:ptColors,pointBorderColor:'transparent',
-      fill:true,tension:.35,
-    }]
-  },
-  options:{
-    responsive:true,maintainAspectRatio:false,
-    plugins:{
-      legend:{display:false},
-      tooltip:{backgroundColor:'#1e1e2e',titleColor:'#f0c040',bodyColor:'#e8e8f0',
-        borderColor:'#2e2e3e',borderWidth:1,
-        callbacks:{
-          title:ctx=>indexPoints[ctx[0].dataIndex].label,
-          label:ctx=>[`지수: ${indexPoints[ctx.dataIndex].val}`,indexPoints[ctx.dataIndex].note]
-        }
-      }
-    },
-    scales:{
-      x:{grid:{color:'#1e1e2e'}, ticks:{color:'#6b6b8a',font:{family:'IBM Plex Mono',size:10},
-        callback:(_,i)=>xLabels12[i]||''}},
-      y:{grid:{color:'#1e1e2e'}, ticks:{color:'#6b6b8a',font:{family:'IBM Plex Mono',size:10}}}
-    }
-  }
-});
-
-// ── ★ 월별 상승률 차트 (탭 전환) ──────────────────────────────
-const validYoy = monthlyData.filter(d => d.yoy !== null);
-const validMom = monthlyData.filter(d => d.mom !== null);
-
-let currentMode = 'yoy';
-let monthlyChart = null;
-
-function buildMonthlyChart(mode) {
-  if (monthlyChart) { monthlyChart.destroy(); monthlyChart = null; }
-
-  const src = mode === 'yoy' ? validYoy : validMom;
-  const key = mode; // 'yoy' or 'mom'
-  const labels = src.map(d => d.date);
-  const values = src.map(d => d[key]);
-
-  const bgColors = values.map(v => v === null ? 'transparent' : v >= 0 ? 'rgba(240,192,64,.7)' : 'rgba(255,107,107,.7)');
-  const borderColors = values.map(v => v === null ? 'transparent' : v >= 0 ? '#f0c040' : '#ff6b6b');
-
-  // 대통령 구간 배경 플러그인 (월별 레이블 기준)
-  const bgPlugin = {
-    id:'bgMonthly',
-    beforeDraw(chart) {
-      const {ctx,chartArea,scales}=chart; if(!chartArea) return;
-      const bounds = getPresidentBoundaries(labels);
-      bounds.forEach(b=>{
-        if(b.si<0||b.ei<0) return;
-        const x1=scales.x.getPixelForValue(b.si),x2=scales.x.getPixelForValue(b.ei);
-        ctx.save();
-        ctx.fillStyle=b.color+'10'; ctx.fillRect(x1,chartArea.top,x2-x1,chartArea.height);
-        ctx.fillStyle=b.color+'80'; ctx.font='600 9px IBM Plex Mono';
-        ctx.fillText(b.name,x1+3,chartArea.top+12); ctx.restore();
-      });
-    }
-  };
-
-  // x축 레이블: 연도 변경 시점만 표시
-  const xTickCallback = (_, i) => {
-    const d = src[i];
-    if (!d) return '';
-    const parts = d.date.split('.');
-    if (parts[1] === '01' || parts[1] === '1') return parts[0];
-    return '';
-  };
-
-  monthlyChart = new Chart(document.getElementById('monthlyChart').getContext('2d'), {
-    type: 'bar',
-    plugins: [bgPlugin],
-    data: {
-      labels,
-      datasets: [{
-        label: mode === 'yoy' ? '전년동월대비 (%)' : '전월대비 (%)',
-        data: values,
-        backgroundColor: bgColors,
-        borderColor: borderColors,
-        borderWidth: 0.5,
-        borderRadius: 1,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      animation: {duration: 400},
-      plugins: {
-        legend: {display: false},
-        tooltip: {
-          backgroundColor:'#1e1e2e',titleColor:'#f0c040',bodyColor:'#e8e8f0',
-          borderColor:'#2e2e3e',borderWidth:1,
-          callbacks: {
-            title: ctx => ctx[0].label,
-            label: ctx => {
-              const v = ctx.raw;
-              if (v === null) return '데이터 없음';
-              return ` ${mode==='yoy'?'전년동월대비':'전월대비'}: ${v>0?'+':''}${v.toFixed(2)}%`;
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          grid: {color:'#1e1e2e'},
-          ticks: {color:'#6b6b8a', font:{family:'IBM Plex Mono',size:9},
-            maxRotation:0, callback: xTickCallback}
-        },
-        y: {
-          grid: {color:'#1e1e2e'},
-          ticks: {color:'#6b6b8a', font:{family:'IBM Plex Mono',size:10},
-            callback: v => `${v>0?'+':''}${v}%`}
-        }
-      }
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const delay = entry.target.dataset.delay || 0;
+      setTimeout(() => entry.target.classList.add('visible'), +delay);
+      observer.unobserve(entry.target);
     }
   });
-}
+}, { threshold: 0.1 });
 
-function switchTab(mode, btn) {
-  currentMode = mode;
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  buildMonthlyChart(mode);
-}
+document.querySelectorAll('.card').forEach(card => observer.observe(card));
 
-// 초기 렌더
-buildMonthlyChart('yoy');
+// coming soon도 살짝 보이게
+comingCards.forEach((card, i) => {
+  setTimeout(() => {
+    card.style.opacity = '0.4';
+    card.style.transform = 'translateY(0)';
+    card.style.transition = 'none';
+  }, 600 + i * 100);
+});
 </script>
 </body>
 </html>
